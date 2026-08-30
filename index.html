@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BK777</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f0f1a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            padding-bottom: 80px;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #00ffcc;
+            text-align: center;
+        }
+
+        .btn {
+            background: #00ffcc;
+            color: #000;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #00b388;
+        }
+
+        .btn:disabled {
+            background: #444 !important;
+            color: #888 !important;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            color: #bbb;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .auth-container {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 350px;
+            background: #161625;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+
+        .auth-box h1 {
+            color: #00ffcc;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #00ffcc, #008855);
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .game-card {
+            background: #22223b;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #333355;
+            transition: 0.2s;
+        }
+
+        .game-card:hover {
+            border-color: #00ffcc;
+        }
+
+        .go-crush-container {
+            background: #161625;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+
+        .game-screen {
+            background: #0f0f1a;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #222;
+        }
+
+        .multiplier-display {
+            font-size: 38px;
+            font-weight: bold;
+            color: #00ffcc;
+        }
+
+        .status-text {
+            font-size: 13px;
+            color: #ff4d4d;
+            margin-top: 5px;
+        }
+
+        .auto-bet-section {
+            background: #22223b;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #333355;
+            margin-top: 10px;
+        }
+
+        .switch-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .switch-label input {
+            display: none;
+        }
+
+        .slider {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+            background-color: #555;
+            border-radius: 22px;
+            transition: 0.3s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .switch-label input:checked + .slider {
+            background-color: #00ffcc;
+        }
+
+        .switch-label input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            background: #12121f;
+            padding: 10px 0;
+            border-top: 1px solid #333;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #888;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: #00ffcc;
+        }
+
+        .nav-item div:first-child {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="screen active auth-container">
+        <div class="auth-box">
+            <h1>BK777</h1>
+            <div class="input-group">
+                <label>ဖုန်းနံပါတ်</label>
+                <input type="text" id="loginPhone" placeholder="09xxxxxxxxx">
+            </div>
+            <div class="input-group">
+                <label>စကားဝှက် (Password)</label>
+                <input type="password" id="loginPassword" placeholder="******">
+            </div>
+            <button class="btn" onclick="handleLogin()">အကောင့်ဝင်မည်</button>
+            <p style="margin-top: 15px; font-size: 13px; color: #888;">Admin ဝင်ရန်: 09999999999 / 20091718</p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD SCREEN -->
+    <div id="homeScreen" class="screen">
+        <div class="header">
+            <h2>BK777 Lobby</h2>
+            <span id="userNameDisplay" style="font-size: 14px; color: #00ffcc;">User</span>
+        </div>
+
+        <div class="balance-card">
+            <span>လက်ကျန်ငွေ (Balance)</span>
+            <span id="userBalance">10,480 MMK</span>
+        </div>
+
+        <div class="game-grid">
+            <div class="game-card" onclick="switchScreen('goCrushScreenMain'); initGoCrushGame();">
+                <h3>🚀 Go Crush</h3>
+                <p style="font-size: 11px; color: #00ffcc; margin-top: 5px;">Auto Bet ပါဝင်သည်</p>
+            </div>
+            <div class="game-card" onclick="alert('နောက်မှ ထည့်သွင်းပေးပါမည်')">
+                <h3>💣 Mine Game</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- GO CRUSH GAME SCREEN -->
+    <div id="goCrushScreenMain" class="screen">
+        <div class="header">
+            <h2 style="margin: 0;">🚀 Go Crush</h2>
+            <button onclick="switchScreen('homeScreen'); stopGoCrushLoop();" style="background:none; border:none; color:#00ffcc; cursor:pointer;">← ပြန်ရန်</button>
+        </div>
+
+        <div class="go-crush-container">
+            <div class="game-screen">
+                <div class="multiplier-display" id="goCrushMultiplier">1.00x</div>
+                <div class="status-text" id="goCrushStatus">5 စက္ကန့် စောင့်ဆိုင်းနေပါသည်...</div>
+            </div>
+
+            <div class="betting-controls" style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="input-group">
+                    <label>လောင်းကြေးပမာဏ (MMK)</label>
+                    <input type="number" id="goCrushBetAmount" value="1000" min="100">
+                </div>
+
+                <div class="input-group">
+                    <label>Auto Cash Out (ဥပမာ - 2.00x)</label>
+                    <input type="number" id="autoCashOutMultiplier" placeholder="ဥပမာ - 2.00" step="0.1" min="1.01">
+                </div>
+
+                <div class="auto-bet-section">
+                    <label class="switch-label">
+                        <span>Auto Bet (အလိုအလျောက် လောင်းရန်)</span>
+                        <input type="checkbox" id="autoBetToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <button class="btn" id="goCrushBetBtn" onclick="handleMainButtonClick()">လောင်းမည် (Bet)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WALLET SCREEN -->
+    <div id="walletScreen" class="screen">
+        <h2>ပိုက်ဆံအိတ် (Wallet)</h2>
+        <div class="input-group">
+            <label>ငွေသွင်း/ငွေထုတ် ပမာဏ</label>
+            <input type="number" id="walletAmount" placeholder="ပမာဏထည့်ပါ">
+        </div>
+        <button class="btn" onclick="alert('ငွေသွင်းတောင်းဆိုမှု ပို့ပြီးပါပြီ။')">ငွေသွင်းမည် (Deposit)</button>
+    </div>
+
+    <!-- ADMIN SCREEN -->
+    <div id="adminScreen" class="screen">
+        <h2>Admin Panel</h2>
+        <p style="color: #00ffcc; text-align: center; margin-bottom: 20px;">စနစ်ထိန်းသိမ်းရေး နေရာ</p>
+        <div style="background: #222; padding: 15px; border-radius: 8px;">
+            <p>စုစုပေါင်းအသုံးပြုသူ: 1 ဦး</p>
+            <p>စောင့်ဆိုင်းဆဲ ငွေသွင်းငွေထုတ်: မရှိပါ</p>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVBAR -->
+    <div class="navbar" id="bottomNav" style="display: none;">
+        <div class="nav-item active" onclick="switchScreen('homeScreen'); setActiveNav(this); stopGoCrushLoop();">
+            <div>🏠</div>
+            <div>ပင်မ</div>
+        </div>
+        <div class="nav-item" onclick="switchScreen('walletScreen'); setActiveNav(this); stopGoCrushLoop();">
+            <div>💳</div>
+            <div>ပိုက်ဆံအိတ်</div>
+        </div>
+        <div class="nav-item" id="adminNavItem" style="display: none;" onclick="switchScreen('adminScreen'); setActiveNav(this); stopGoCrushLoop();">
+            <div>⚙️</div>
+            <div>Admin</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let currentUser = null;
+    let userBalance = 10480;
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function setActiveNav(element) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    function handleLogin() {
+        let phone = document.getElementById('loginPhone').value;
+        let pass = document.getElementById('loginPassword').value;
+
+        if (!phone || !pass) {
+            alert('အချက်အလက်များကို အပြည့်အစုံထည့်ပါ။');
+            return;
+        }
+
+        currentUser = phone;
+        document.getElementById('userNameDisplay').innerText = phone;
+        document.getElementById('bottomNav').style.display = 'flex';
+
+        if (phone === '09999999999' && pass === '20091718') {
+            document.getElementById('adminNavItem').style.display = 'block';
+            switchScreen('adminScreen');
+            setActiveNav(document.getElementById('adminNavItem'));
+        } else {
+            document.getElementById('adminNavItem').style.display = 'none';
+            switchScreen('homeScreen');
+        }
+    }
+
+    let gameState = 'WAITING';
+    let waitTimer = 5;
+    let waitInterval = null;
+    let gameInterval = null;
+    let currentMultiplier = 1.00;
+    let isBetPlaced = false;
+    let hasCashOut = false;
+
+    function initGoCrushGame() {
+        if (waitInterval || gameInterval) return;
+        startWaitingPhase();
+    }
+
+    function stopGoCrushLoop() {
+        clearInterval(waitInterval);
+        clearInterval(gameInterval);
+        waitInterval = null;
+        gameInterval = null;
+    }
+
+    function startWaitingPhase() {
+        gameState = 'WAITING';
+        waitTimer = 5;
+        isBetPlaced = false;
+        hasCashOut = false;
+
+        let betBtn = document.getElementById('goCrushBetBtn');
+        let statusText = document.getElementById('goCrushStatus');
+        
+        let autoBetEnabled = document.getElementById('autoBetToggle').checked;
+        if (autoBetEnabled) {
+            let betAmount = parseFloat(document.getElementById('goCrushBetAmount').value);
+            if (userBalance >= betAmount) {
+                userBalance -= betAmount;
+                document.getElementById('userBalance').innerText = userBalance.toLocaleString() + ' MMK';
+                isBetPlaced = true;
+                betBtn.innerText = "လောင်းပြီးပါပြီ (Bet Placed)";
+                betBtn.disabled = true;
+            } else {
+                betBtn.innerText = "လောင်းမည် (Bet)";
+                betBtn.disabled = false;
+            }
+        } else {
+            betBtn.innerText = "လောင်းမည် (Bet)";
+            betBtn.disabled = false;
+        }
+
+        document.getElementById('goCrushMultiplier').innerText = "1.00x";
+        document.getElementById('goCrushMultiplier').style.color = "#00ffcc";
+
+        waitInterval = setInterval(() => {
+            waitTimer--;
+            if (waitTimer > 0) {
+                statusText.innerText = `${waitTimer} စက္ကန့် စောင့်ဆိုင်းနေပါသည်...`;
+            } else {
+                clearInterval(waitInterval);
+                waitInterval = null;
+                startMultiplierRun();
+            }
+        }, 1000);
+    }
+
+    function handleMainButtonClick() {
+        if (gameState === 'WAITING') {
+            let betAmount = parseFloat(document.getElementById('goCrushBetAmount').value);
+            if (userBalance < betAmount) {
+                alert('လက်ကျန်ငွေ မလုံလောက်ပါ။');
+                return;
+            }
+
+            userBalance -= betAmount;
+            document.getElementById('userBalance').innerText = userBalance.toLocaleString() + ' MMK';
+            
+            isBetPlaced = true;
+            let btn = document.getElementById('goCrushBetBtn');
+            btn.innerText = "လောင်းပြီးပါပြီ (Bet Placed)";
+            btn.disabled = true;
+        } else if (gameState === 'RUNNING' && isBetPlaced && !hasCashOut) {
+            triggerCashOut();
+        }
+    }
+
+    function startMultiplierRun() {
+        gameState = 'RUNNING';
+        currentMultiplier = 1.00;
+        document.getElementById('goCrushStatus').innerText = "ဂိမ်းစတင်နေပါပြီ ခုန်တက်နေသည်...";
+        
+        let betBtn = document.getElementById('goCrushBetBtn');
+        if (isBetPlaced) {
+            betBtn.innerText = "Cash Out (ထုတ်မည်)";
+            betBtn.disabled = false;
+        } else {
+            betBtn.innerText = "လောင်းလို့မရတော့ပါ (Locked)";
+            betBtn.disabled = true;
+        }
+
+        gameInterval = setInterval(() => {
+            currentMultiplier += 0.01;
+            document.getElementById('goCrushMultiplier').innerText = currentMultiplier.toFixed(2) + 'x';
+
+            let autoCashOutVal = parseFloat(document.getElementById('autoCashOutMultiplier').value);
+            if (isBetPlaced && !hasCashOut && !isNaN(autoCashOutVal) && currentMultiplier >= autoCashOutVal) {
+                triggerCashOut();
+            }
+
+            let crashChance = 0.03;
+            if (currentMultiplier > 1.25) crashChance = 0.12;
+            if (currentMultiplier > 1.80) crashChance = 0.35;
+
+            if (Math.random() < crashChance && currentMultiplier > 1.03) {
+                triggerCrash();
+            }
+        }, 100);
+    }
+
+    function triggerCashOut() {
+        if (isBetPlaced && !hasCashOut && gameState === 'RUNNING') {
+            hasCashOut = true;
+            let betAmount = parseFloat(document.getElementById('goCrushBetAmount').value);
+            let winnings = Math.floor(betAmount * currentMultiplier);
+            
+            userBalance += winnings;
+            document.getElementById('userBalance').innerText = userBalance.toLocaleString() + ' MMK';
+            alert(`အောင်မြင်ပါသည်! ${winnings.toLocaleString()} MMK ရရှိပါသည်။ (${currentMultiplier.toFixed(2)}x)`);
+            
+            let btn = document.getElementById('goCrushBetBtn');
+            btn.innerText = "အောင်မြင်ပါသည်";
+            btn.disabled = true;
+        }
+    }
+
+    function triggerCrash() {
+        clearInterval(gameInterval);
+        gameInterval = null;
+        gameState = 'CRASHED';
+
+        document.getElementById('goCrushMultiplier').innerText = "CRASHED (" + currentMultiplier.toFixed(2) + "x)";
+        document.getElementById('goCrushMultiplier').style.color = "#ff4d4d";
+        document.getElementById('goCrushStatus').innerText = "ဂိမ်းပျက်ကျသွားပါပြီ။ ၃ စက္ကန့်အတွင်း အသစ်စမည်...";
+
+        let betBtn = document.getElementById('goCrushBetBtn');
+        betBtn.innerText = "လောင်းမည် (Bet)";
+        betBtn.disabled = true;
+
+        setTimeout(() => {
+            startWaitingPhase();
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
