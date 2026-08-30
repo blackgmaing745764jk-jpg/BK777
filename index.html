@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CK Lottery & Gaming Platform</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b0e14; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 480px; height: 100vh; background: #0f172a; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 0 25px rgba(0,0,0,0.9); }
+        @media (min-width: 481px) { .app-container { height: 880px; border-radius: 24px; border: 2px solid #1e293b; } }
+        
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; background: #0f172a; overflow-y: auto; z-index: 1; }
+        .screen.has-nav { height: calc(100% - 65px); }
+        .screen.active { display: flex; }
+
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: #1e293b; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #334155; z-index: 10; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #94a3b8; font-size: 11px; text-decoration: none; width: 20%; }
+        .nav-item.active { color: #38bdf8; font-weight: bold; }
+        .nav-item span.icon { font-size: 20px; margin-bottom: 2px; }
+
+        .header-blue { background: linear-gradient(135deg, #1d4ed8, #2563eb); color: white; padding: 16px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+        .btn { background: #2563eb; color: white; border: none; padding: 12px; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; font-size: 15px; text-align: center; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #475569 !important; opacity: 0.6; cursor: not-allowed; }
+        .btn-success { background: #16a34a; }
+        .btn-warning { background: #f59e0b; color: #000; }
+        .btn-danger { background: #dc2626; }
+        
+        .input-group { margin-bottom: 12px; width: 100%; }
+        .input-group label { display: block; margin-bottom: 5px; color: #94a3b8; font-size: 13px; }
+        .input-group select, .input-group input { width: 100%; padding: 11px; background: #1e293b; border: 1px solid #334155; color: white; border-radius: 8px; font-size: 15px; }
+        
+        .card-box { background: #1e293b; border-radius: 12px; padding: 15px; margin: 10px 12px; border: 1px solid #334155; }
+        .game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+        .game-card { background: #1e293b; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; border: 1px solid #334155; transition: 0.2s; }
+        .game-card:hover { border-color: #38bdf8; }
+        .game-card h3 { color: #38bdf8; margin-bottom: 4px; font-size: 15px; }
+        .game-card p { font-size: 11px; color: #94a3b8; }
+
+        .auth-screen { padding: 30px; display: flex; flex-direction: column; justify-content: center; height: 100%; background: #0f172a; position: absolute; z-index: 20; width: 100%; top:0; left:0; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        .admin-table th, .admin-table td { border: 1px solid #334155; padding: 8px; text-align: center; }
+        .admin-table th { background: #1e293b; color: #38bdf8; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Login / Register Screen -->
+        <div id="login-screen" class="auth-screen">
+            <h2 style="color: #38bdf8; text-align: center; margin-bottom: 20px;">CK Lottery ဝင်ရန်</h2>
+            <div class="input-group">
+                <label>ဖုန်းနံပါတ် သို့မဟုတ် UID</label>
+                <input type="text" id="login-phone" placeholder="09xxxxxxxxx သို့ admin">
+            </div>
+            <div class="input-group">
+                <label>စကားဝှက်</label>
+                <input type="password" id="login-pass" placeholder="********">
+            </div>
+            <button class="btn" onclick="login()">ဝင်ရောက်မည်</button>
+        </div>
+
+        <!-- Home Screen -->
+        <div id="screen-home" class="screen has-nav active">
+            <div class="header-blue">
+                <div style="font-size: 12px; opacity: 0.8;">အကောင့်လက်ကျန်</div>
+                <div style="font-size: 24px; font-weight: bold; margin: 4px 0;" id="home-balance">K2,299.00</div>
+            </div>
+            <div style="padding: 10px 12px 0 12px; font-size: 13px; font-weight: bold; color: #94a3b8;">ဂိမ်းများ</div>
+            <div class="game-grid">
+                <div class="game-card" onclick="openWingo()"><h3>Win Go</h3><p>အရောင်ခန့်မှန်းဂိမ်း</p></div>
+                <div class="game-card" onclick="openMine()"><h3>Mine Game</h3><p>ဗုံးရှောင်ရွှေရှာဂိမ်း</p></div>
+                <div class="game-card" onclick="openGoCrush()"><h3>Go Crush</h3><p>Aviator စတိုင်ဂိမ်း</p></div>
+            </div>
+        </div>
+
+        <!-- Operations Screen -->
+        <div id="screen-ops" class="screen has-nav">
+            <div class="header-blue" style="text-align: center; font-weight: bold;">လုပ်ဆောင်ချက်များ</div>
+            <div class="game-grid" style="margin-top: 15px;">
+                <div class="game-card" onclick="openWingo()"><h3>Win Go</h3><p>အရောင်ခန့်မှန်း</p></div>
+                <div class="game-card" onclick="openMine()"><h3>Mine Game</h3><p>ဗုံးရှောင်</p></div>
+                <div class="game-card" onclick="openGoCrush()"><h3>Go Crush</h3><p>Aviator</p></div>
+            </div>
+        </div>
+
+        <!-- Vault / Profile Screen -->
+        <div id="screen-vault" class="screen has-nav">
+            <div class="header-blue" style="text-align: center;">
+                <div style="font-size: 14px;">ပုဂ္ဂိုလ်ရေးရာ & အကောင့်</div>
+                <div style="font-size: 20px; font-weight: bold; margin-top: 4px;" id="vault-uid">UID: 1178999</div>
+            </div>
+            <div class="card-box" id="admin-entry-box" style="display:none;">
+                <div style="color: #f59e0b; font-weight: bold; margin-bottom: 8px;">👑 Admin Panel ထိန်းချုပ်ရန်</div>
+                <button class="btn btn-warning" onclick="openAdminPanel()">Admin Dashboard သို့သွားရန်</button>
+            </div>
+            <div class="card-box">
+                <div style="display: flex; justify-content: space-between; padding: 6px 0;"><span>လုံခြုံရေး</span><span style="color:#16a34a;">အဆင့်မြင့်</span></div>
+                <div style="display: flex; justify-content: space-between; padding: 6px 0;"><span>ဗားရှင်း</span><span>v3.2.0</span></div>
+            </div>
+        </div>
+
+        <!-- Wallet Screen -->
+        <div id="screen-wallet" class="screen has-nav">
+            <div class="header-blue" style="text-align: center;">
+                <div style="font-size: 13px;">ပိုက်ဆံအိတ်လက်ကျန်</div>
+                <div style="font-size: 26px; font-weight: bold; margin-top: 4px;" id="wallet-balance">K2,299.00</div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px;">
+                <button class="btn btn-success" onclick="alert('ငွေသွင်းရန် Admin သို့ဆက်သွယ်ပါ။')">ငွေသွင်းမည်</button>
+                <button class="btn btn-danger" onclick="alert('ငွေထုတ်ရန် တောင်းဆိုပြီးပါပြီ။')">ငွေထုတ်မည်</button>
+            </div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="screen-profile" class="screen has-nav">
+            <div class="header-blue" style="display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 28px;">👤</div>
+                <div>
+                    <div style="font-weight: bold;" id="prof-name">MEMBER_99</div>
+                    <div style="font-size: 11px; opacity: 0.8;">UID: 1178999</div>
+                </div>
+            </div>
+            <div style="padding: 15px;">
+                <button class="btn btn-danger" onclick="location.reload()">အကောင့်ထွက်မည်</button>
+            </div>
+        </div>
+
+        <!-- Admin Panel Screen -->
+        <div id="screen-admin" class="screen has-nav">
+            <div class="header-blue" style="display: flex; justify-content: space-between; align-items: center;">
+                <span onclick="switchTab('screen-vault')" style="cursor:pointer;">← နောက်သို့</span>
+                <span style="font-weight: bold;">Admin Panel (ငွေကြေးနှင့် UID)</span>
+                <span></span>
+            </div>
+            <div style="padding: 12px;">
+                <div class="card-box">
+                    <div style="font-weight: bold; color: #38bdf8; margin-bottom: 8px;">အသုံးပြုသူများစာရင်း</div>
+                    <table class="admin-table">
+                        <tr><th>UID</th><th>အမည်</th><th>လက်ကျန်ငွေ</th><th>လုပ်ချက်</th></tr>
+                        <tr>
+                            <td>1178999</td>
+                            <td>User 1</td>
+                            <td id="admin-u1-bal">2,299 Ks</td>
+                            <td><button onclick="addAdminBal(1000)" style="background:#16a34a; color:#fff; border:none; padding:4px 8px; border-radius:4px;">+1000 Ks</button></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Win Go Game Screen (Accurate Timers & Min Bet 10) -->
+        <div id="screen-wingo" class="screen" style="background: #0f172a;">
+            <div class="header-blue" style="display: flex; justify-content: space-between; align-items: center;">
+                <span onclick="switchTab('screen-home')" style="cursor:pointer;">←</span>
+                <span style="font-weight: bold;">CK LOTTERY - Win Go</span>
+                <span id="wingo-bal" style="font-size: 13px; font-weight: bold;">K2,299.00</span>
+            </div>
+            <div style="padding: 12px;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px;">
+                    <div id="tab-30s" onclick="setWingoTimer(30)" style="background: #2563eb; padding: 8px; border-radius: 6px; text-align: center; font-size: 11px; font-weight: bold; cursor:pointer;">30s</div>
+                    <div id="tab-1min" onclick="setWingoTimer(60)" style="background: #1e293b; padding: 8px; border-radius: 6px; text-align: center; font-size: 11px; cursor:pointer;">1Min</div>
+                    <div id="tab-3min" onclick="setWingoTimer(180)" style="background: #1e293b; padding: 8px; border-radius: 6px; text-align: center; font-size: 11px; cursor:pointer;">3Min</div>
+                    <div id="tab-5min" onclick="setWingoTimer(300)" style="background: #1e293b; padding: 8px; border-radius: 6px; text-align: center; font-size: 11px; cursor:pointer;">5Min</div>
+                </div>
+
+                <div class="card-box" style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px 0;">
+                    <div>
+                        <div style="font-size: 11px; color: #94a3b8;" id="wingo-mode-text">Win Go 30s</div>
+                        <div style="font-size: 10px; color: #64748b;">2026083010051440</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 10px; color: #94a3b8;">Time remaining</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #facc15; font-family: monospace;" id="wingo-timer-display">00 : 30</div>
+                    </div>
+                </div>
+
+                <!-- Bet Input Bar for Win Go -->
+                <div class="card-box" id="wingo-bet-box" style="margin-bottom: 10px; padding: 10px;">
+                    <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">ထိုးကြေးထည့်ပါ (အနည်းဆုံး ၁၀)</label>
+                    <input type="number" id="wingo-bet-input" value="10" min="10" style="width:100%; padding:8px; background:#0f172a; border:1px solid #334155; color:white; border-radius:6px;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px;" id="wingo-btn-container">
+                    <button class="btn btn-success wingo-action-btn" onclick="placeWingoBet('Green')">Green</button>
+                    <button class="btn wingo-action-btn" style="background: #9333ea;" onclick="placeWingoBet('Violet')">Violet</button>
+                    <button class="btn btn-danger wingo-action-btn" onclick="placeWingoBet('Red')">Red</button>
+                </div>
+                <p id="wingo-result-msg" style="text-align: center; font-weight: bold; font-size: 14px; margin-top: 10px;"></p>
+            </div>
+        </div>
+
+        <!-- Mine Game Screen -->
+        <div id="screen-mine" class="screen" style="background: #0f172a;">
+            <div class="header-blue" style="display: flex; justify-content: space-between; align-items: center;">
+                <span onclick="switchTab('screen-home')" style="cursor:pointer;">←</span>
+                <span style="font-weight: bold;">Mine Game (ဗုံးရှောင်)</span>
+                <span id="mine-bal" style="font-size: 13px; font-weight: bold;">K2,299.00</span>
+            </div>
+            <div style="padding: 12px; display: flex; flex-direction: column; align-items: center;">
+                <div class="input-group" id="mine-config-box" style="width: 100%;">
+                    <label>ဗုံးအရေအတွက် ရွေးချယ်ရန် (၃ မှ ၈)</label>
+                    <select id="mine-bomb-count">
+                        <option value="3">ဗုံး ၃ လုံး (လွယ်)</option>
+                        <option value="4">ဗုံး ၄ လုံး</option>
+                        <option value="5">ဗုံး ၅ လုံး</option>
+                        <option value="6">ဗုံး ၆ လုံး</option>
+                        <option value="7">ဗုံး ၇ လုံး</option>
+                        <option value="8">ဗုံး ၈ လုံး (ခက်)</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="startMineGameSeq()" style="width: 100%; margin-bottom: 10px;">ဂိမ်းစတင်မည်</button>
+                <div id="mine-play-area" style="display:none; width: 100%; flex-direction: column; align-items: center;">
+                    <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 8px; padding: 0 5px;">
+                        <span style="color: #38bdf8; font-weight: bold;">ရရှိငွေ: <span id="mine-win-display">1300</span> Ks</span>
+                        <span style="color: #facc15; font-size: 13px;" id="mine-step-info">အဆင့်: 0 / 10</span>
+                    </div>
+                    <div id="mine-horizontal-path" style="display: flex; flex-direction: column-reverse; gap: 6px; width: 100%; max-width: 300px; max-height: 280px; overflow-y: auto; padding: 5px; border: 1px solid #334155; border-radius: 10px; background: #1e293b;"></div>
+                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
+                        <button class="btn btn-warning" id="mine-cashout-btn" onclick="cashOutMineGame()" style="flex: 1;">Cash Out</button>
+                        <button class="btn btn-danger" id="mine-restart-btn" onclick="openMine()" style="flex: 1; display:none;">ပြန်စမည်</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Go Crush Screen (With Min Bet 200, Live Multiplier, Lock & Fade, High Loss Rate) -->
+        <div id="screen-gocrush" class="screen" style="background: #0f172a;">
+            <div class="header-blue" style="display: flex; justify-content: space-between; align-items: center;">
+                <span onclick="switchTab('screen-home')" style="cursor:pointer;">←</span>
+                <span style="font-weight: bold;">Go Crush (Aviator)</span>
+                <span id="gocrush-bal" style="font-size: 13px; font-weight: bold;">K2,299.00</span>
+            </div>
+            <div style="padding: 15px; display: flex; flex-direction: column; justify-content: center; height: calc(100% - 60px);">
+                
+                <!-- Multiplier Display Header with Cash Out & Win Balance Next to It -->
+                <div class="card-box" style="padding: 20px; text-align: center; margin-bottom: 12px; background: #1e293b; position: relative;">
+                    <div style="position: absolute; top: 8px; right: 12px; font-size: 12px; color: #4ade80;" id="gocrush-top-win">အနိုင်ရငွေ: 0 Ks</div>
+                    <div style="font-size: 44px; font-weight: bold; color: #38bdf8; font-family: monospace;" id="gocrush-mult">3.48x</div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;" id="gocrush-status-text">ပျံသန်းနေသည်...</div>
+                </div>
+
+                <!-- Bet Input Bar (Min 200) -->
+                <div class="card-box" id="gocrush-bet-card" style="margin-bottom: 12px; padding: 12px;">
+                    <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">ထိုးကြေးထည့်ပါ (အနည်းဆုံး ၂၀၀)</label>
+                    <input type="number" id="gocrush-bet-input" value="200" min="200" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; color:white; border-radius:8px;">
+                </div>
+
+                <!-- Bet / Cash Out Button -->
+                <button class="btn btn-success" id="gocrush-action-btn" onclick="handleGoCrushAction()" style="padding: 14px; font-size: 16px; margin-bottom: 10px;">ဂိမ်းစတင်မည် (Bet)</button>
+                <p id="gocrush-res" style="text-align: center; font-weight: bold; font-size: 14px;"></p>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('screen-home'); setActiveNav(this)"><span class="icon">🏠</span><span>ပင်မ</span></div>
+            <div class="nav-item" onclick="switchTab('screen-ops'); setActiveNav(this)"><span class="icon">📋</span><span>လုပ်ဆောင်ချက်</span></div>
+            <div class="nav-item" onclick="switchTab('screen-vault'); setActiveNav(this)"><span class="icon">💎</span><span>ပုဂ္ဂိုလ်ရေး</span></div>
+            <div class="nav-item" onclick="switchTab('screen-wallet'); setActiveNav(this)"><span class="icon">👛</span><span>ပိုက်ဆံအိတ်</span></div>
+            <div class="nav-item" onclick="switchTab('screen-profile'); setActiveNav(this)"><span class="icon">👤</span><span>ကျွန်ုပ်</span></div>
+        </div>
+    </div>
+
+    <script>
+        let userBalance = 2299;
+        let currentUserRole = "user";
+
+        function login() {
+            let phone = document.getElementById('login-phone').value.trim();
+            if(!phone) { alert('အချက်အလက်ထည့်ပါ'); return; }
+            if(phone === 'admin') {
+                currentUserRole = 'admin';
+                document.getElementById('admin-entry-box').style.display = 'block';
+            }
+            document.getElementById('login-screen').style.display = 'none';
+            updateAllUIs();
+        }
+
+        function switchTab(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            updateAllUIs();
+        }
+
+        function setActiveNav(el) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function updateAllUIs() {
+            let bStr = 'K' + userBalance.toLocaleString() + '.00';
+            document.getElementById('home-balance').innerText = bStr;
+            document.getElementById('wallet-balance').innerText = bStr;
+            document.getElementById('wingo-bal').innerText = bStr;
+            document.getElementById('mine-bal').innerText = bStr;
+            document.getElementById('gocrush-bal').innerText = bStr;
+            document.getElementById('admin-u1-bal').innerText = userBalance.toLocaleString() + ' Ks';
+        }
+
+        function openAdminPanel() { switchTab('screen-admin'); }
+        function addAdminBal(amt) { userBalance += amt; updateAllUIs(); alert('ငွေဖြည့်သွင်းပြီးပါပြီ။'); }
+
+        // --- WIN GO ACCURATE TIMERS & BETTING LOGIC ---
+        let wingoTimerInterval = null;
+        let currentWingoSec = 30;
+        let wingoTimeLeft = 30;
+        let wingoState = 'waiting'; // waiting, locked, finished
+        let pendingWingoBet = null;
+
+        function openWingo() {
+            switchTab('screen-wingo');
+            setWingoTimer(30);
+        }
+
+        function setWingoTimer(sec) {
+            currentWingoSec = sec;
+            wingoTimeLeft = sec;
+            if(wingoTimerInterval) clearInterval(wingoTimerInterval);
+            
+            // Highlight active tab
+            ['30s', '1min', '3min', '5min'].forEach(id => {
+                document.getElementById('tab-' + id).style.background = '#1e293b';
+                document.getElementById('tab-' + id).style.fontWeight = 'normal';
+            });
+            let activeId = sec === 30 ? '30s' : (sec === 60 ? '1min' : (sec === 180 ? '3min' : '5min'));
+            document.getElementById('tab-' + activeId).style.background = '#2563eb';
+            document.getElementById('tab-' + activeId).style.fontWeight = 'bold';
+
+            document.getElementById('wingo-mode-text').innerText = 'Win Go ' + (sec < 60 ? sec + 'ਸ' : (sec/60) + 'Min');
+            resetWingoUI();
+
+            wingoTimerInterval = setInterval(() => {
+                let m = String(Math.floor(wingoTimeLeft / 60)).padStart(2, '0');
+                let s = String(wingoTimeLeft % 60).padStart(2, '0');
+                document.getElementById('wingo-timer-display').innerText = m + ' : ' + s;
+                
+                if(wingoTimeLeft <= 0) {
+                    processWingoResult();
+                    wingoTimeLeft = currentWingoSec;
+                }
+                wingoTimeLeft--;
+            }, 1000);
+        }
+
+        function resetWingoUI() {
+            wingoState = 'waiting';
+            pendingWingoBet = null;
+            document.getElementById('wingo-bet-box').style.opacity = '1';
+            document.getElementById('wingo-bet-box').style.pointerEvents = 'auto';
+            document.querySelectorAll('.wingo-action-btn').forEach(b => {
+                b.style.opacity = '1';
+                b.disabled = false;
+            });
+            document.getElementById('wingo-result-msg').innerText = '';
+        }
+
+        function placeWingoBet(color) {
+            let betAmt = parseInt(document.getElementById('wingo-bet-input').value);
+            if(isNaN(betAmt) || betAmt < 10) { alert('အနည်းဆုံး ထိုးကြေး ၁၀ ထည့်ရပါမည်။'); return; }
+            if(userBalance < betAmt) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ။'); return; }
+
+            userBalance -= betAmt;
+            updateAllUIs();
+            pendingWingoBet = { color: color, amount: betAmt };
+            wingoState = 'locked';
+
+            // Lock and fade betting panel
+            document.getElementById('wingo-bet-box').style.opacity = '0.4';
+            document.getElementById('wingo-bet-box').style.pointerEvents = 'none';
+            document.querySelectorAll('.wingo-action-btn').forEach(b => {
+                b.style.opacity = '0.4';
+                b.disabled = true;
+            });
+            document.getElementById('wingo-result-msg').innerHTML = '<span style="color:#facc15;">ထိုးကြေးလက်ခံရရှိပါသည်။ အချိန်ကုန်ဆုံးရန် စောင့်ဆိုင်းနေပါသည်...</span>';
+        }
+
+        function processWingoResult() {
+            if(wingoState !== 'locked' || !pendingWingoBet) return;
+            
+            // High loss rate configuration
+            let win = Math.random() > 0.75; 
+            if(win) {
+                let reward = pendingWingoBet.amount * 2;
+                userBalance += reward;
+                document.getElementById('wingo-result-msg').innerHTML = `<span style="color:#4ade80;">🎉 အနိုင်ရရှိသည် (+${reward} Ks)</span>`;
+            } else {
+                document.getElementById('wingo-result-msg').innerHTML = `<span style="color:#f87171;">❌ ရှုံးနိမ့်သွားပါပြီ (-${pendingWingoBet.amount} Ks)</span>`;
+            }
+            updateAllUIs();
+            wingoState = 'finished';
+            
+            setTimeout(() => {
+                if(wingoState === 'finished') resetWingoUI();
+            }, 3000);
+        }
+
+        // --- MINE GAME ---
+        let mineActive = false;
+        let mineCurrentStep = 0;
+        let mineCurrentWin = 1000;
+        let totalMineSteps = 10;
+
+        function openMine() { switchTab('screen-mine'); resetMineScreen(); }
+
+        function resetMineScreen() {
+            document.getElementById('mine-config-box').style.display = 'block';
+            document.getElementById('mine-play-area').style.display = 'none';
+            document.getElementById('mine-restart-btn').style.display = 'none';
+            document.getElementById('mine-cashout-btn').style.display = 'block';
+            mineActive = false;
+        }
+
+        function startMineGameSeq() {
+            if(userBalance < 200) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ။'); return; }
+            userBalance -= 200;
+            updateAllUIs();
+
+            mineActive = true;
+            mineCurrentStep = 0;
+            mineCurrentWin = 300;
+
+            document.getElementById('mine-config-box').style.display = 'none';
+            document.getElementById('mine-play-area').style.display = 'flex';
+            document.getElementById('mine-win-display').innerText = mineCurrentWin;
+            document.getElementById('mine-step-info').innerText = 'အဆင့်: 0 / ' + totalMineSteps;
+
+            let pathBox = document.getElementById('mine-horizontal-path');
+            pathBox.innerHTML = '';
+
+            for(let i = 1; i <= totalMineSteps; i++) {
+                let row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.justifyContent = 'space-around';
+                row.style.padding = '6px';
+                row.style.background = '#0f172a';
+                row.style.borderRadius = '6px';
+
+                for(let j = 0; j < 3; j++) {
+                    let tile = document.createElement('span');
+                    tile.innerText = '❓';
+                    tile.style.cursor = 'pointer';
+                    tile.style.padding = '4px 10px';
+                    tile.style.background = '#334155';
+                    tile.style.borderRadius = '4px';
+                    tile.onclick = () => clickMineTile(i, tile);
+                    row.appendChild(tile);
+                }
+                pathBox.appendChild(row);
+            }
+        }
+
+        function clickMineTile(level, tileEl) {
+            if(!mineActive) return;
+            let bombCount = parseInt(document.getElementById('mine-bomb-count').value);
+            let hitBomb = Math.random() < (bombCount / 8); // High loss rate
+
+            if(hitBomb) {
+                tileEl.innerText = '💣';
+                tileEl.style.background = '#dc2626';
+                document.getElementById('mine-step-info').innerText = '💥 ဗုံးပေါက်သွားပါပြီ!';
+                document.getElementById('mine-cashout-btn').style.display = 'none';
+                document.getElementById('mine-restart-btn').style.display = 'block';
+                mineActive = false;
+            } else {
+                tileEl.innerText = '💰';
+                tileEl.style.background = '#16a34a';
+                mineCurrentStep++;
+                mineCurrentWin = Math.floor(mineCurrentWin * 1.25);
+                document.getElementById('mine-win-display').innerText = mineCurrentWin;
+                document.getElementById('mine-step-info').innerText = 'အဆင့်: ' + mineCurrentStep + ' / ' + totalMineSteps;
+
+                if(mineCurrentStep >= totalMineSteps) {
+                    userBalance += mineCurrentWin;
+                    updateAllUIs();
+                    alert('🎉 အောင်မြင်စွာ ဆွတ်ခူးနိုင်ပါပြီ! ရရှိငွေ: ' + mineCurrentWin + ' Ks');
+                    mineActive = false;
+                    document.getElementById('mine-cashout-btn').style.display = 'none';
+                    document.getElementById('mine-restart-btn').style.display = 'block';
+                }
+            }
+        }
+
+        function cashOutMineGame() {
+            if(!mineActive) return;
+            userBalance += mineCurrentWin;
+            updateAllUIs();
+            alert('💵 ငွေထုတ်ယူမှု အောင်မြင်သည်! ရရှိငွေ: ' + mineCurrentWin + ' Ks');
+            resetMineScreen();
+        }
+
+        // --- GO CRUSH GAME (Aviator with Min Bet 200, Lock & Fade, Live Multiplier & High Loss Rate) ---
+        let crushInterval = null;
+        let currentMultiplier = 1.00;
+        let crushActive = false;
+        let crushBetAmount = 200;
+        let crushPhase = 'idle'; // idle, flying, cashed, crashed
+
+        function openGoCrush() { switchTab('screen-gocrush'); resetGoCrush(); }
+
+        function resetGoCrush() {
+            crushPhase = 'idle';
+            currentMultiplier = 1.00;
+            document.getElementById('gocrush-mult').innerText = '1.00x';
+            document.getElementById('gocrush-status-text').innerText = 'ပျံသန်းနေသည်...';
+            document.getElementById('gocrush-top-win').innerText = 'အနိုင်ရငွေ: 0 Ks';
+            document.getElementById('gocrush-bet-card').style.opacity = '1';
+            document.getElementById('gocrush-bet-card').style.pointerEvents = 'auto';
+            let actionBtn = document.getElementById('gocrush-action-btn');
+            actionBtn.innerText = 'ဂိမ်းစတင်မည် (Bet)';
+            actionBtn.className = 'btn btn-success';
+            actionBtn.disabled = false;
+            document.getElementById('gocrush-res').innerText = '';
+        }
+
+        function handleGoCrushAction() {
+            if(crushPhase === 'idle') {
+                let betInput = parseInt(document.getElementById('gocrush-bet-input').value);
+                if(isNaN(betInput) || betInput < 200) { alert('အနည်းဆုံး ထိုးကြေး ၂၀၀ ထည့်ရပါမည်။'); return; }
+                if(userBalance < betInput) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ။'); return; }
+
+                crushBetAmount = betInput;
+                userBalance -= crushBetAmount;
+                updateAllUIs();
+
+                crushPhase = 'flying';
+                currentMultiplier = 1.00;
+
+                // Lock & fade bet box
+                document.getElementById('gocrush-bet-card').style.opacity = '0.4';
+                document.getElementById('gocrush-bet-card').style.pointerEvents = 'none';
+
+                let actionBtn = document.getElementById('gocrush-action-btn');
+                actionBtn.innerText = 'Cash Out';
+                actionBtn.className = 'btn btn-warning';
+
+                crushInterval = setInterval(() => {
+                    if(crushPhase !== 'flying') return;
+                    currentMultiplier += 0.04;
+                    document.getElementById('gocrush-mult').innerText = currentMultiplier.toFixed(2) + 'x';
+                    let curWin = Math.floor(crushBetAmount * currentMultiplier);
+                    document.getElementById('gocrush-top-win').innerText = 'အနိုင်ရငွေ: ' + curWin.toLocaleString() + ' Ks';
+
+                    // Very high loss rate configuration (crashes early frequently)
+                    let crashProbability = 0.08 + (currentMultiplier * 0.04);
+                    if(Math.random() < crashProbability) {
+                        clearInterval(crushInterval);
+                        crushPhase = 'crashed';
+                        document.getElementById('gocrush-mult').innerText = '💥 ' + currentMultiplier.toFixed(2) + 'x';
+                        document.getElementById('gocrush-status-text').innerText = 'လေယာဉ်ပျက်ကျသွားပါပြီ';
+                        document.getElementById('gocrush-top-win').innerText = 'အနိုင်ရငွေ: 0 Ks';
+                        document.getElementById('gocrush-res').innerHTML = '<span style="color:#f87171;">❌ ရှုံးနိမ့်သွားပါပြီ (-' + crushBetAmount + ' Ks)</span>';
+                        
+                        let actionBtn = document.getElementById('gocrush-action-btn');
+                        actionBtn.innerText = 'ပြန်စမည်';
+                        actionBtn.className = 'btn btn-danger';
+                        actionBtn.onclick = () => openGoCrush();
+                    }
+                }, 120);
+
+            } else if(crushPhase === 'flying') {
+                // Manual Cash Out clicked
+                clearInterval(crushInterval);
+                crushPhase = 'cashed';
+
+                let finalWin = Math.floor(crushBetAmount * currentMultiplier);
+                userBalance += finalWin;
+                updateAllUIs();
+
+                document.getElementById('gocrush-status-text').innerText = 'Cash Out အောင်မြင်သည်';
+                document.getElementById('gocrush-res').innerHTML = `<span style="color:#4ade80;">✅ အောင်မြင်သည် (+${finalWin.toLocaleString()} Ks)</span>`;
+                
+                let actionBtn = document.getElementById('gocrush-action-btn');
+                actionBtn.innerText = 'ပြန်စမည်';
+                actionBtn.className = 'btn btn-success';
+                actionBtn.onclick = () => openGoCrush();
+            }
+        }
+    </script>
+</body>
+</html>
