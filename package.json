@@ -1,0 +1,12 @@
+{
+  "name": "bk777-game",
+  "version": "1.0.0",
+  "description": "BK777 Game Portal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
