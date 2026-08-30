@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BK777 - Game Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0d1117; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 480px; height: 100vh; background: #161b22; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        @media (min-width: 481px) { .app-container { height: 850px; border-radius: 20px; border: 2px solid #30363d; } }
+        
+        /* Screens */
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; background: #161b22; z-index: 1; overflow-y: auto; }
+        .screen.active { display: flex; }
+
+        /* Loading Screen */
+        #loading-screen { justify-content: center; align-items: center; background: linear-gradient(135deg, #1f242d, #0d1117); z-index: 10; }
+        .logo-text { font-size: 42px; font-weight: bold; color: #f0b90b; letter-spacing: 2px; text-shadow: 0 0 10px rgba(240,185,11,0.5); margin-bottom: 20px; }
+        .loader-bar { width: 200px; height: 6px; background: #30363d; border-radius: 3px; overflow: hidden; }
+        .loader-progress { width: 0%; height: 100%; background: #f0b90b; transition: width 0.1s linear; }
+
+        /* Common Elements */
+        .header { background: #21262d; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; }
+        .btn { background: #f0b90b; color: #0d1117; border: none; padding: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .input-group { margin-bottom: 15px; width: 100%; }
+        .input-group label { display: block; margin-bottom: 5px; color: #8b949e; font-size: 14px; }
+        .input-group input { width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 8px; font-size: 16px; }
+        
+        /* Auth Screens */
+        .auth-container { padding: 30px; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .auth-title { font-size: 28px; margin-bottom: 20px; color: #f0b90b; text-align: center; }
+        .switch-text { text-align: center; margin-top: 15px; color: #8b949e; font-size: 14px; cursor: pointer; }
+        .switch-text span { color: #f0b90b; text-decoration: underline; }
+
+        /* Dashboard */
+        .user-info { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #21262d; margin: 10px; border-radius: 10px; border: 1px solid #30363d; }
+        .balance { color: #f0b90b; font-weight: bold; font-size: 18px; }
+        .wallet-btns { display: flex; gap: 10px; padding: 0 10px 10px 10px; }
+        .wallet-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .deposit-btn { background: #238636; color: white; }
+        .withdraw-btn { background: #da3633; color: white; }
+
+        .section-title { padding: 10px 15px; font-size: 16px; color: #8b949e; font-weight: bold; }
+        .game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px; }
+        .game-card { background: #21262d; border: 1px solid #30363d; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .game-card:active { transform: scale(0.95); background: #30363d; }
+        .game-card h3 { color: #f0b90b; margin-bottom: 5px; }
+        .game-card p { font-size: 12px; color: #8b949e; }
+
+        /* Bottom Nav */
+        .nav-bar { display: flex; background: #21262d; border-top: 1px solid #30363d; position: absolute; bottom: 0; width: 100%; height: 60px; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #8b949e; font-size: 12px; cursor: pointer; }
+        .nav-item.active { color: #f0b90b; }
+
+        /* Game Play Screen */
+        .game-screen-header { display: flex; align-items: center; padding: 15px; background: #21262d; border-bottom: 1px solid #30363d; }
+        .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; margin-right: 15px; }
+        .game-area { padding: 20px; display: flex; flex-direction: column; align-items: center; flex: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen active">
+            <div class="logo-text">BK777</div>
+            <div class="loader-bar">
+                <div class="loader-progress" id="progress"></div>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen">
+            <div class="auth-container">
+                <div class="auth-title">BK777 ဝင်ရောက်ရန်</div>
+                <div class="input-group">
+                    <label>ဖုန်းနံပါတ်</label>
+                    <input type="text" id="login-phone" placeholder="09xxxxxxxxx">
+                </div>
+                <div class="input-group">
+                    <label>စကားဝှက်</label>
+                    <input type="password" id="login-pass" placeholder="********">
+                </div>
+                <button class="btn" onclick="login()">ဝင်မည်</button>
+                <div class="switch-text" onclick="switchScreen('register-screen')">အကောင့်မရှိသေးပါက <span>အကောင့်ဖွင့်ရန်</span></div>
+            </div>
+        </div>
+
+        <!-- Register Screen -->
+        <div id="register-screen" class="screen">
+            <div class="auth-container">
+                <div class="auth-title">အကောင့်အသစ်ဖွင့်ရန်</div>
+                <div class="input-group">
+                    <label>အမည်</label>
+                    <input type="text" id="reg-name" placeholder="သင့်နာမည်">
+                </div>
+                <div class="input-group">
+                    <label>ဖုန်းနံပါတ်</label>
+                    <input type="text" id="reg-phone" placeholder="09xxxxxxxxx">
+                </div>
+                <div class="input-group">
+                    <label>စကားဝှက်</label>
+                    <input type="password" id="reg-pass" placeholder="********">
+                </div>
+                <button class="btn" onclick="register()">အကောင့်ပြုလုပ်မည်</button>
+                <div class="switch-text" onclick="switchScreen('login-screen')">အကောင့်ရှိပြီးသားဆိုလျှင် <span>ဝင်ရန်</span></div>
+            </div>
+        </div>
+
+        <!-- Home Screen -->
+        <div id="home-screen" class="screen">
+            <div class="header">
+                <h2>BK777 Portal</h2>
+                <span id="user-display" style="font-size: 14px; color: #8b949e;"></span>
+            </div>
+            <div class="user-info">
+                <span>လက်ကျန်ငွေ</span>
+                <span class="balance" id="user-balance">10,000 Ks</span>
+            </div>
+            <div class="wallet-btns">
+                <button class="wallet-btn deposit-btn" onclick="alert('KBZ Pay: 09123456789 သို့ ငွေလွှဲပြီး Screenshot ပို့ပေးပါ။')">ငွေသွင်းရန်</button>
+                <button class="wallet-btn withdraw-btn" onclick="alert('အနိမ့်ဆုံး ငွေထုတ်ရန် 5,000 Ks လိုအပ်ပါသည်။')">ငွေထုတ်ရန်</button>
+            </div>
+
+            <div class="section-title">လူကြိုက်များသော ဂိမ်းများ</div>
+            <div class="game-grid">
+                <div class="game-card" onclick="openGame('Go Crush')">
+                    <h3>Go Crush</h3>
+                    <p>အရောင်စုံ ဖျက်ဆွဲဂိမ်း</p>
+                </div>
+                <div class="game-card" onclick="openGame('Mine Game')">
+                    <h3>Mine Game</h3>
+                    <p>ဗုံးရှောင် ရွှေရှာဂိမ်း</p>
+                </div>
+            </div>
+            
+            <div style="height: 70px;"></div>
+            <div class="nav-bar">
+                <div class="nav-item active" onclick="switchTab('home')">ပင်မ</div>
+                <div class="nav-item" onclick="switchTab('profile')">ပရိုဖိုင်</div>
+            </div>
+        </div>
+
+        <!-- Game Play Screen -->
+        <div id="game-play-screen" class="screen">
+            <div class="game-screen-header">
+                <button class="back-btn" onclick="switchScreen('home-screen')">←</button>
+                <h3 id="game-title">Game</h3>
+            </div>
+            <div class="game-area" id="game-content">
+                <!-- Dynamic Game Content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Loading Simulation
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 5;
+            document.getElementById('progress').style.width = progress + '%';
+            if (progress >= 100) {
+                clearInterval(interval);
+                document.getElementById('loading-screen').classList.remove('active');
+                document.getElementById('login-screen').classList.add('active');
+            }
+        }, 50);
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function login() {
+            let phone = document.getElementById('login-phone').value;
+            if(!phone) { alert('ဖုန်းနံပါတ်ထည့်ပါ'); return; }
+            document.getElementById('user-display').innerText = phone;
+            switchScreen('home-screen');
+        }
+
+        function register() {
+            let name = document.getElementById('reg-name').value;
+            if(!name) { alert('အမည်ထည့်ပါ'); return; }
+            alert('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။');
+            switchScreen('login-screen');
+        }
+
+        function openGame(gameName) {
+            document.getElementById('game-title').innerText = gameName;
+            let area = document.getElementById('game-content');
+            if(gameName === 'Go Crush') {
+                area.innerHTML = '<p style="margin-bottom:20px;">Go Crush ဂိမ်းကို စတင်ရန် အောက်ပါခလုတ်ကို နှိပ်ပါ</p><button class="btn" onclick="alert(\'ကံစမ်းမှု အောင်မြင်သည်! +1000 Ks ရရှိပါသည်\')">ကစားမည်</button>';
+            } else {
+                area.innerHTML = '<p style="margin-bottom:20px;">Mine Game (ဗုံးရှောင်ဂိမ်း)</p><button class="btn" onclick="alert(\'ဗုံးမမိပါ! အနိုင်ရရှိသွားပါပြီ\')">ပုံးဖွင့်မည်</button>';
+            }
+            switchScreen('game-play-screen');
+        }
+
+        function switchTab(tab) {
+            if(tab === 'profile') {
+                alert('ပရိုဖိုင် စာမျက်နှာ');
+            }
+        }
+    </script>
+</body>
+</html>
