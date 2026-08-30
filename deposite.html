@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BK777 ငွေသွင်းရန်</title>
+    <!-- Firebase SDK 9 (Compat versions for ease of use) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <h2>ငွေသွင်းရန် ပုံစံ</h2>
+    <form id="depositForm">
+        <label>ငွေလွှဲသူအမည်:</label><br>
+        <input type="text" id="username" required><br><br>
+        
+        <label>ငွေပမာဏ (ကျပ်):</label><br>
+        <input type="number" id="amount" required><br><br>
+        
+        <label>ငွေလွှဲသည့် နည်းလမ်း:</label><br>
+        <select id="method">
+            <option value="KPay">KPay</option>
+            <option value="WavePay">WavePay</option>
+        </select><br><br>
+
+        <button type="submit">ငွေသွင်းမည်</button>
+    </form>
+
+    <script>
+        // သင့်ရဲ့ Firebase Config အချက်အလက်များ
+        const firebaseConfig = {
+            databaseURL: "https://bk777-6bc1b-default-rtdb.firebaseio.com/"
+        };
+
+        // Firebase ကို စတင်ချိတ်ဆက်ခြင်း
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Form တင်လိုက်သည့်အခါ
+        document.getElementById('depositForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const amount = document.getElementById('amount').value;
+            const method = document.getElementById('method').value;
+
+            // Database ထဲသို့ data ပို့ခြင်း
+            db.ref('bk777_data').push({
+                username: username,
+                amount: amount,
+                method: method,
+                status: 'pending',
+                timestamp: Date.now()
+            }).then(() => {
+                alert('ငွေသွင်းလွှာ အောင်မြင်စွာ ပို့ပြီးပါပြီ!');
+                document.getElementById('depositForm').reset();
+            }).catch((error) => {
+                alert('အမှားအယွင်းရှိ습니다: ' + error.message);
+            });
+        });
+    </script>
+</body>
+</html>
