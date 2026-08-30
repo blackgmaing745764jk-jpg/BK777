@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BK777 - Game Portal & Admin Panel</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0d1117; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 480px; height: 100vh; background: #161b22; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        @media (min-width: 481px) { .app-container { height: 850px; border-radius: 20px; border: 2px solid #30363d; } }
+        
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; background: #161b22; z-index: 1; overflow-y: auto; }
+        .screen.active { display: flex; }
+
+        .header { background: #21262d; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; }
+        .btn { background: #f0b90b; color: #0d1117; border: none; padding: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; margin-top: 5px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-danger { background: #da3633; color: white; }
+        .btn-success { background: #238636; color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; width: auto; margin-top: 0; }
+        
+        .input-group { margin-bottom: 15px; width: 100%; }
+        .input-group label { display: block; margin-bottom: 5px; color: #8b949e; font-size: 14px; }
+        .input-group select, .input-group input { width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 8px; font-size: 16px; }
+        
+        .auth-container { padding: 30px; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .auth-title { font-size: 28px; margin-bottom: 20px; color: #f0b90b; text-align: center; }
+        
+        .user-info { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #21262d; margin: 10px; border-radius: 10px; border: 1px solid #30363d; }
+        .balance { color: #f0b90b; font-weight: bold; font-size: 18px; }
+        .wallet-btns { display: flex; gap: 10px; padding: 0 10px 10px 10px; }
+        .wallet-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .deposit-btn { background: #238636; color: white; }
+        .withdraw-btn { background: #da3633; color: white; }
+
+        .section-title { padding: 10px 15px; font-size: 16px; color: #8b949e; font-weight: bold; }
+        .game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px; }
+        .game-card { background: #21262d; border: 1px solid #30363d; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .game-card:active { transform: scale(0.95); background: #30363d; }
+        .game-card h3 { color: #f0b90b; margin-bottom: 5px; }
+        .game-card p { font-size: 12px; color: #8b949e; }
+
+        .game-screen-header { display: flex; align-items: center; padding: 15px; background: #21262d; border-bottom: 1px solid #30363d; }
+        .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; margin-right: 15px; }
+        .game-area { padding: 15px; display: flex; flex-direction: column; align-items: center; flex: 1; width: 100%; }
+
+        /* Mine Game Board */
+        .mine-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 320px; margin-top: 15px; }
+        .mine-tile { background: #21262d; border: 1px solid #30363d; aspect-ratio: 1; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; }
+        .mine-tile.revealed { background: #30363d; }
+
+        /* Wingo Board */
+        .wingo-btns { display: flex; gap: 10px; width: 100%; margin-top: 15px; }
+        .wingo-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; color: white; cursor: pointer; }
+        .btn-green { background: #238636; }
+        .btn-red { background: #da3633; }
+        .btn-purple { background: #8957e5; }
+
+        /* Admin UI */
+        .admin-card { background: #21262d; border: 1px solid #30363d; border-radius: 10px; padding: 12px; margin-bottom: 10px; width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .admin-card-info { font-size: 14px; }
+        .admin-card-info div { margin-bottom: 3px; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .badge-deposit { background: #238636; color: white; }
+        .badge-withdraw { background: #da3633; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen active">
+            <div class="auth-container">
+                <div class="auth-title">BK777 ဝင်ရောက်ရန်</div>
+                <div class="input-group">
+                    <label>ဖုန်းနံပါတ်</label>
+                    <input type="text" id="login-phone" placeholder="09xxxxxxxxx">
+                </div>
+                <div class="input-group">
+                    <label>စကားဝှက်</label>
+                    <input type="password" id="login-pass" placeholder="********">
+                </div>
+                <button class="btn" onclick="login()">ဝင်မည်</button>
+                <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #8b949e;">
+                    (Admin ဝင်ရန် - Phone: <b>admin</b> ၊ Password: <b>admin123</b>)
+                </div>
+            </div>
+        </div>
+
+        <!-- User Home Screen -->
+        <div id="home-screen" class="screen">
+            <div class="header">
+                <h2>BK777 Portal</h2>
+                <span id="user-display" style="font-size: 14px; color: #8b949e;"></span>
+            </div>
+            <div class="user-info">
+                <span>လက်ကျန်ငွေ</span>
+                <span class="balance" id="user-balance">0 Ks</span>
+            </div>
+            <div class="wallet-btns">
+                <button class="wallet-btn deposit-btn" onclick="switchScreen('deposit-screen')">ငွေသွင်းရန်</button>
+                <button class="wallet-btn withdraw-btn" onclick="switchScreen('withdraw-screen')">ငွေထုတ်ရန်</button>
+            </div>
+
+            <div class="section-title">ဂိမ်းများ</div>
+            <div class="game-grid">
+                <div class="game-card" onclick="openMineGame()">
+                    <h3>Mine Game</h3>
+                    <p>ဗုံးရှောင် ရွှေရှာဂိမ်း</p>
+                </div>
+                <div class="game-card" onclick="openWingoGame()">
+                    <h3>Win Go</h3>
+                    <p>အရောင်ခန့်မှန်းဂိမ်း</p>
+                </div>
+                <div class="game-card" onclick="openGame('Go Crush')">
+                    <h3>Go Crush</h3>
+                    <p>အရောင်စုံ ဖျက်ဆွဲဂိမ်း</p>
+                </div>
+            </div>
+            
+            <div style="padding: 15px; margin-top: auto;">
+                <button class="btn btn-danger" onclick="switchScreen('login-screen')">ထွက်မည် (Logout)</button>
+            </div>
+        </div>
+
+        <!-- Deposit Screen -->
+        <div id="deposit-screen" class="screen">
+            <div class="game-screen-header">
+                <button class="back-btn" onclick="switchScreen('home-screen')">←</button>
+                <h3>ငွေသွင်းရန် (KBZ Pay)</h3>
+            </div>
+            <div class="game-area">
+                <p style="margin-bottom: 10px; color: #f0b90b; text-align: center;">KBZ Pay: <b>09123456789</b> သို့ ငွေလွှဲပါ</p>
+                <div class="input-group">
+                    <label>ငွေသွင်းမည့် ပမာဏ (Ks)</label>
+                    <input type="number" id="dep-amount" placeholder="10000">
+                </div>
+                <div class="input-group">
+                    <label>လုပ်ငန်းစဉ်အမှတ် (Trx ID / နောက်ဆုံး ၄ လုံး)</label>
+                    <input type="text" id="dep-trx" placeholder="1234">
+                </div>
+                <button class="btn btn-success" onclick="submitDeposit()">ငွေသွင်းတောင်းဆိုမည်</button>
+            </div>
+        </div>
+
+        <!-- Withdraw Screen -->
+        <div id="withdraw-screen" class="screen">
+            <div class="game-screen-header">
+                <button class="back-btn" onclick="switchScreen('home-screen')">←</button>
+                <h3>ငွေထုတ်ရန်</h3>
+            </div>
+            <div class="game-area">
+                <div class="input-group">
+                    <label>ငွေထုတ်မည့် ပမာဏ (Ks)</label>
+                    <input type="number" id="wd-amount" placeholder="5000">
+                </div>
+                <div class="input-group">
+                    <label>KBZ Pay ဖုန်းနံပါတ်</label>
+                    <input type="text" id="wd-phone" placeholder="09xxxxxxxxx">
+                </div>
+                <button class="btn btn-danger" onclick="submitWithdraw()">ငွေထုတ်တောင်းဆိုမည်</button>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard Screen -->
+        <div id="admin-screen" class="screen">
+            <div class="header">
+                <h2>Admin Panel</h2>
+                <button class="btn btn-danger btn-sm" onclick="switchScreen('login-screen')">Logout</button>
+            </div>
+            <div style="padding: 15px;">
+                <h3 style="color: #f0b90b; margin-bottom: 15px;">ငွေသွင်း / ငွေထုတ် တောင်းဆိုမှုများ</h3>
+                <div id="admin-requests-list"></div>
+            </div>
+        </div>
+
+        <!-- Mine Game Screen -->
+        <div id="mine-screen" class="screen">
+            <div class="game-screen-header">
+                <button class="back-btn" onclick="switchScreen('home-screen')">←</button>
+                <h3>Mine Game (ဗုံးရှောင်ရန်)</h3>
+            </div>
+            <div class="game-area">
+                <div class="input-group">
+                    <label>ဗုံးအရေအတွက် ရွေးရန်</label>
+                    <select id="mine-count">
+                        <option value="3">ဗုံး ၃ လုံး</option>
+                        <option value="5">ဗုံး ၅ လုံး</option>
+                        <option value="8">ဗုံး ၈ လုံး</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="startMineGame()">ဂိမ်းစတင်မည်</button>
+                <div class="mine-grid" id="mine-grid"></div>
+            </div>
+        </div>
+
+        <!-- Win Go Game Screen -->
+        <div id="wingo-screen" class="screen">
+            <div class="game-screen-header">
+                <button class="back-btn" onclick="switchScreen('home-screen')">←</button>
+                <h3>Win Go (အရောင်ခန့်မှန်းရန်)</h3>
+            </div>
+            <div class="game-area">
+                <p style="color: #8b949e; margin-bottom: 15px;">အနိုင်ရမည့် အရောင်ကို ရွေးချယ်ပါ</p>
+                <div class="wingo-btns">
+                    <button class="wingo-btn btn-green" onclick="playWingo('အစိမ်း')">အစိမ်း (2x)</button>
+                    <button class="wingo-btn btn-purple" onclick="playWingo('ခရမ်း')">ခရမ်း (4x)</button>
+                    <button class="wingo-btn btn-red" onclick="playWingo('အနီ')">အနီ (2x)</button>
+                </div>
+                <p id="wingo-result" style="margin-top: 20px; font-size: 18px; color: #f0b90b;"></p>
+            </div>
+        </div>
+        
+        <!-- Generic Game Screen -->
+        <div id="game-play-screen" class="screen">
+            <div class="game-screen-header">
+                <button class="back-btn" onclick="switchScreen('home-screen')">←</button>
+                <h3 id="game-title">Game</h3>
+            </div>
+            <div class="game-area" id="game-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // သုံးစွဲသူများ၏ အချက်အလက်နှင့် လက်ကျန်ငွေများကို သိမ်းဆည်းရန်
+        let users = {
+            "defaultUser": { balance: 0 }
+        };
+        let currentUser = "";
+        let requests = [];
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function login() {
+            let phone = document.getElementById('login-phone').value;
+            let pass = document.getElementById('login-pass').value;
+
+            if(!phone) { alert('ဖုန်းနံပါတ် သို့မဟုတ် Username ထည့်ပါ'); return; }
+
+            if(phone === 'admin' && pass === 'admin123') {
+                renderAdminRequests();
+                switchScreen('admin-screen');
+                return;
+            }
+
+            currentUser = phone;
+            if(!users[currentUser]) {
+                users[currentUser] = { balance: 0 }; // အကောင့်အသစ်ဆိုလျှင် လက်ကျန်ငွေ 0 ဖြင့် စမည်
+            }
+
+            document.getElementById('user-display').innerText = currentUser;
+            updateUserBalanceDisplay();
+            switchScreen('home-screen');
+        }
+
+        function updateUserBalanceDisplay() {
+            let bal = users[currentUser] ? users[currentUser].balance : 0;
+            document.getElementById('user-balance').innerText = bal.toLocaleString() + ' Ks';
+        }
+
+        function submitDeposit() {
+            let amt = parseInt(document.getElementById('dep-amount').value);
+            let trx = document.getElementById('dep-trx').value;
+            if(!amt || !trx) { alert('အချက်အလက် အပြည့်အစုံထည့်ပါ'); return; }
+
+            requests.push({
+                id: Date.now(),
+                user: currentUser,
+                type: 'DEPOSIT',
+                amount: amt,
+                info: 'Trx ID: ' + trx,
+                status: 'PENDING'
+            });
+
+            alert('ငွေသွင်းတောင်းဆိုမှု တင်ပြီးပါပြီ။ Admin အတည်ပြုပေးသည်အထိ စောင့်ဆိုင်းပါ။');
+            switchScreen('home-screen');
+        }
+
+        function submitWithdraw() {
+            let amt = parseInt(document.getElementById('wd-amount').value);
+            let phone = document.getElementById('wd-phone').value;
+            let currentBal = users[currentUser] ? users[currentUser].balance : 0;
+
+            if(!amt || !phone) { alert('အချက်အလက် အပြည့်အစုံထည့်ပါ'); return; }
+            if(amt > currentBal) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ'); return; }
+
+            requests.push({
+                id: Date.now(),
+                user: currentUser,
+                type: 'WITHDRAW',
+                amount: amt,
+                info: 'KBZ Pay: ' + phone,
+                status: 'PENDING'
+            });
+
+            alert('ငွေထုတ်တောင်းဆိုမှု တင်ပြီးပါပြီ။');
+            switchScreen('home-screen');
+        }
+
+        function renderAdminRequests() {
+            let list = document.getElementById('admin-requests-list');
+            list.innerHTML = '';
+
+            let pending = requests.filter(r => r.status === 'PENDING');
+            if(pending.length === 0) {
+                list.innerHTML = '<p style="color:#8b949e; text-align:center; margin-top:20px;">တောင်းဆိုမှုအသစ်များ မရှိသေးပါ။</p>';
+                return;
+            }
+
+            pending.forEach(r => {
+                let card = document.createElement('div');
+                card.className = 'admin-card';
+                card.innerHTML = `
+                    <div class="admin-card-info">
+                        <div>User: <b>${r.user}</b> <span class="badge ${r.type === 'DEPOSIT' ? 'badge-deposit' : 'badge-withdraw'}">${r.type}</span></div>
+                        <div>ပမာဏ: <b>${r.amount.toLocaleString()} Ks</b></div>
+                        <div style="color:#8b949e; font-size:12px;">${r.info}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-success btn-sm" onclick="approveRequest(${r.id})">Approve</button>
+                        <button class="btn btn-danger btn-sm" style="margin-top:5px;" onclick="rejectRequest(${r.id})">Reject</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function approveRequest(id) {
+            let req = requests.find(r => r.id === id);
+            if(req) {
+                req.status = 'APPROVED';
+                if(!users[req.user]) { users[req.user] = { balance: 0 }; }
+
+                if(req.type === 'DEPOSIT') {
+                    users[req.user].balance += req.amount; // Admin Approve မှ ငွေဝင်မည်
+                } else if(req.type === 'WITHDRAW') {
+                    users[req.user].balance -= req.amount;
+                }
+                alert('အတည်ပြုပေးလိုက်ပါပြီ။');
+                renderAdminRequests();
+            }
+        }
+
+        function rejectRequest(id) {
+            let req = requests.find(r => r.id === id);
+            if(req) {
+                req.status = 'REJECTED';
+                alert('ငြင်းပယ်လိုက်ပါပြီ။');
+                renderAdminRequests();
+            }
+        }
+
+        function openMineGame() {
+            let currentBal = users[currentUser] ? users[currentUser].balance : 0;
+            if(currentBal <= 0) {
+                alert('လက်ကျန်ငွေ မရှိပါ သို့မဟုတ် 0 ဖြစ်နေပါသည်။ ငွေသွင်းပြီးမှ ကစားပါ။');
+                return;
+            }
+            switchScreen('mine-screen');
+            let grid = document.getElementById('mine-grid');
+            grid.innerHTML = '';
+            for(let i=0; i<16; i++) {
+                let tile = document.createElement('div');
+                tile.className = 'mine-tile';
+                tile.innerText = '❓';
+                grid.appendChild(tile);
+            }
+        }
+
+        function startMineGame() {
+            let mines = document.getElementById('mine-count').value;
+            alert('ဗုံး ' + mines + ' လုံးဖြင့် ဂိမ်းစတင်ပါပြီ။ ပုံးများကို နှိပ်ပါ။');
+            let grid = document.getElementById('mine-grid');
+            grid.innerHTML = '';
+            for(let i=0; i<16; i++) {
+                let tile = document.createElement('div');
+                tile.className = 'mine-tile';
+                tile.innerText = '💎';
+                tile.onclick = function() {
+                    tile.classList.add('revealed');
+                    tile.innerText = Math.random() > 0.4 ? '💰' : '💣';
+                };
+                grid.appendChild(tile);
+            }
+        }
+
+        function openWingoGame() {
+            let currentBal = users[currentUser] ? users[currentUser].balance : 0;
+            if(currentBal <= 0) {
+                alert('လက်ကျန်ငွေ မရှိပါ သို့မဟုတ် 0 ဖြစ်နေပါသည်။ ငွေသွင်းပြီးမှ ကစားပါ။');
+                return;
+            }
+            switchScreen('wingo-screen');
+            document.getElementById('wingo-result').innerText = '';
+        }
+
+        function playWingo(color) {
+            let colors = ['အစိမ်း', 'အနီ', 'ခရမ်း'];
+            let winColor = colors[Math.floor(Math.random() * colors.length)];
+            let res = document.getElementById('wingo-result');
+            if(color === winColor) {
+                res.innerText = '🎉 ထွက်အရောင်: ' + winColor + ' - အနိုင်ရရှိပါသည်!';
+                users[currentUser].balance += 1000;
+            } else {
+                res.innerText = '❌ ထွက်အရောင်: ' + winColor + ' - ရှုံးနိမ့်သွားပါသည်။';
+                users[currentUser].balance -= 500;
+            }
+            updateUserBalanceDisplay();
+        }
+
+        function openGame(gameName) {
+            let currentBal = users[currentUser] ? users[currentUser].balance : 0;
+            if(currentBal <= 0) {
+                alert('လက်ကျန်ငွေ မရှိပါ သို့မဟုတ် 0 ဖြစ်နေပါသည်။ ငွေသွင်းပြီးမှ ကစားပါ။');
+                return;
+            }
+            document.getElementById('game-title').innerText = gameName;
+            document.getElementById('game-content').innerHTML = '<p style="margin-bottom:20px;">' + gameName + ' ဂိမ်းအသစ်</p><button class="btn" onclick="alert(\'ကစားမှု အောင်မြင်သည်!\')">စတင်ရန်</button>';
+            switchScreen('game-play-screen');
+        }
+    </script>
+</body>
+</html>
