@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BK777 - Win Go Official Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        .ck-gradient { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%); }
+        .glow-effect { box-shadow: 0 0 30px rgba(59, 130, 246, 0.25); }
+        .card-glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); }
+        .admin-box { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.6); }
+        .admin-login-box { background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 2px solid rgba(234, 179, 8, 0.4); box-shadow: 0 0 40px rgba(234, 179, 8, 0.2); }
+    </style>
+</head>
+<body class="ck-gradient text-white min-h-screen font-sans select-none pb-28">
+
+    <nav class="bg-slate-900/90 backdrop-blur-md border-b border-blue-500/20 px-4 py-3 flex justify-between items-center sticky top-0 z-50 shadow-xl">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="openAdminLoginModal()">
+            <span class="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400 bg-slate-800 px-3 py-1.5 rounded-xl border border-cyan-500/40 shadow-inner">BK777</span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <a href="https://t.me/Bakemono_enzo" target="_blank" class="bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 px-3 py-1.5 rounded-xl text-xs font-semibold text-sky-300 flex items-center gap-1.5 transition shadow-md">
+                <svg class="w-4 h-4 fill-current text-sky-400" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.01-1.38-.27-2.06-.49-.83-.27-1.49-.42-1.43-.88.03-.24.36-.49 1-.74 3.92-1.71 6.54-2.84 7.86-3.39 3.74-1.55 4.52-1.82 5.03-1.83.11 0 .37.03.54.17.14.12.18.28.2.4-.02.07-.02.13-.04.22z"/></svg>
+                <span>Telegram CS</span>
+            </a>
+            
+            <div id="userBalanceArea" class="hidden flex items-center gap-2">
+                <span class="bg-slate-800/90 px-3 py-1.5 rounded-full text-green-400 font-bold text-xs border border-green-500/30 flex items-center gap-1.5 shadow-inner">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> 💰 <span id="navBalance">0</span> Ks
+                </span>
+                <button onclick="logout()" class="bg-gradient-to-r from-red-600 to-rose-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition shadow-md">ထွက်မည်</button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="authScreen" class="max-w-md mx-auto mt-12 p-6 card-glass border border-blue-500/30 rounded-3xl shadow-2xl glow-effect">
+        <div class="text-center mb-6">
+            <div class="inline-block p-3 rounded-2xl bg-blue-950/60 border border-blue-400/30 mb-3 shadow-inner">
+                <span class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400">BK777 WIN GO</span>
+            </div>
+            <h1 class="text-xl font-black text-cyan-300">အကောင့်ဝင်ရန် / အသစ်ဖွင့်ရန်</h1>
+        </div>
+        <form id="authForm" class="space-y-4">
+            <div>
+                <label class="text-xs font-semibold text-slate-300">ဖုန်းနံပါတ်</label>
+                <div class="flex mt-1 bg-slate-800/80 border border-slate-700 rounded-2xl overflow-hidden focus-within:border-cyan-400 transition">
+                    <span class="px-3 py-3 bg-slate-700/50 text-xs text-slate-300 flex items-center border-r border-slate-700">+95</span>
+                    <input type="text" id="authPhone" placeholder="9669xxxxxx" required class="w-full p-3 bg-transparent focus:outline-none text-white text-sm font-medium">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-300">စကားဝှက် (Password)</label>
+                <input type="password" id="authPass" placeholder="••••••••" required class="w-full mt-1 p-3 bg-slate-800/80 border border-slate-700 rounded-2xl focus:border-cyan-400 focus:outline-none text-white text-sm">
+            </div>
+            <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white font-bold rounded-2xl shadow-lg hover:opacity-90 transition text-sm">အကောင့်ဝင်မည်</button>
+        </form>
+    </div>
+
+    <div id="dashboardScreen" class="hidden max-w-4xl mx-auto p-4 space-y-6">
+        <div class="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-900 p-5 rounded-3xl border border-cyan-500/30 shadow-xl flex items-center justify-between relative overflow-hidden">
+            <div class="z-10">
+                <div class="text-xs text-cyan-300 font-medium">ဖုန်းနံပါတ်: <span id="displayUid">-</span></div>
+                <div class="text-lg font-black text-white mt-0.5 flex items-center gap-2">
+                    <span id="displayUsername">Member</span>
+                    <span class="text-xs bg-pink-500/20 text-pink-300 px-2.5 py-0.5 rounded-full border border-pink-500/30">VIP 1 ✨</span>
+                </div>
+            </div>
+            <div class="text-right z-10">
+                <div class="text-xs text-slate-300">လက်ကျန်ငွေစုစုပေါင်း</div>
+                <div class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400"><span id="dashBalance">0</span> Ks</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 text-center">
+            <div onclick="switchTab('deposit')" class="card-glass p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:border-blue-500/55 transition shadow-md">
+                <div class="text-xl mb-1">📥</div>
+                <div class="text-xs font-semibold text-slate-200">ငွေသွင်းရန်</div>
+            </div>
+            <div onclick="switchTab('withdraw')" class="card-glass p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:border-pink-500/55 transition shadow-md">
+                <div class="text-xl mb-1">📤</div>
+                <div class="text-xs font-semibold text-slate-200">ငွေထုတ်ရန်</div>
+            </div>
+            <div onclick="switchTab('games')" class="card-glass p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:border-cyan-500/55 transition shadow-md">
+                <div class="text-xl mb-1">🎮</div>
+                <div class="text-xs font-semibold text-slate-200">Win Go ဂိမ်း</div>
+            </div>
+            <div onclick="openHistoryModal()" class="card-glass p-3.5 rounded-2xl border border-slate-800 cursor-pointer hover:border-yellow-500/55 transition shadow-md">
+                <div class="text-xl mb-1">📋</div>
+                <div class="text-xs font-semibold text-slate-200">မှတ်တမ်းများ</div>
+            </div>
+        </div>
+
+        <div id="sectionGames" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div onclick="openWinGoGame('30s')" class="bg-gradient-to-br from-pink-600 via-rose-700 to-purple-900 p-5 rounded-3xl cursor-pointer hover:scale-[1.01] transition shadow-xl text-center border border-pink-500/40">
+                    <div class="text-3xl mb-1">⏱️</div>
+                    <div class="font-black text-sm text-white">Win Go (30 Sec)</div>
+                    <p class="text-[11px] text-pink-200 mt-1">စက္ကန့် ၃၀ အခန်း</p>
+                </div>
+                <div onclick="openWinGoGame('1m')" class="bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-900 p-5 rounded-3xl cursor-pointer hover:scale-[1.01] transition shadow-xl text-center border border-blue-500/40">
+                    <div class="text-3xl mb-1">⏱️</div>
+                    <div class="font-black text-sm text-white">Win Go (1 Min)</div>
+                    <p class="text-[11px] text-blue-200 mt-1">၁ မိနစ် အခန်း</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="sectionDeposit" class="hidden card-glass p-6 rounded-3xl border border-slate-800 space-y-4 shadow-xl">
+            <h3 class="text-sm font-bold text-green-400">📥 ငွေသွင်းရန် (KBZPay)</h3>
+            <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800 text-xs space-y-1 text-slate-300">
+                <div>ငွေလွှဲရမည့် KBZPay နံပါတ်: <span class="text-yellow-400 font-bold">09678817131</span></div>
+                <div>အကောင့်အမည်: <span class="text-yellow-400 font-bold">Myint Myint Than</span></div>
+                <div class="text-[11px] text-slate-400 mt-1">အနည်းဆုံး 5,000 - အများဆုံး 10,000,000 Ks</div>
+            </div>
+            <form id="depositForm" class="space-y-3">
+                <div>
+                    <label class="text-xs text-slate-400">KBZPay အကောင့်အမည်</label>
+                    <input type="text" id="depName" placeholder="ဥပမာ - Mg Mg" required class="w-full mt-1 p-3.5 bg-slate-800 border border-slate-700 rounded-2xl text-sm text-white">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">KBZPay ဖုန်းနံပါတ်</label>
+                    <input type="text" id="depPhone" placeholder="09xxxxxxxx" required class="w-full mt-1 p-3.5 bg-slate-800 border border-slate-700 rounded-2xl text-sm text-white">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">ငွေသွင်းမည့်ပမာဏ (Ks)</label>
+                    <input type="number" id="depAmount" min="5000" max="10000000" placeholder="ပမာဏထည့်ပါ" required class="w-full mt-1 p-3.5 bg-slate-800 border border-slate-700 rounded-2xl text-sm text-white">
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-green-600 hover:bg-green-500 font-bold rounded-2xl text-sm transition">ငွေလွှဲထားကြောင်း အတည်ပြုမည်</button>
+            </form>
+        </div>
+
+        <div id="sectionWithdraw" class="hidden card-glass p-6 rounded-3xl border border-slate-800 space-y-4 shadow-xl">
+            <h3 class="text-sm font-bold text-pink-400">📤 ငွေထုတ်ရန် (KBZPay)</h3>
+            <form id="withdrawForm" class="space-y-3">
+                <div>
+                    <label class="text-xs text-slate-400">KBZPay ဖုန်းနံပါတ်</label>
+                    <input type="text" id="witPhone" placeholder="09xxxxxxxx" required class="w-full mt-1 p-3.5 bg-slate-800 border border-slate-700 rounded-2xl text-sm text-white">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">ထုတ်မည့်ငွေပမာဏ (Ks)</label>
+                    <input type="number" id="witAmount" placeholder="ပမာဏထည့်ပါ" required class="w-full mt-1 p-3.5 bg-slate-800 border border-slate-700 rounded-2xl text-sm text-white">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">အကောင့်ဝင် Password ဖြင့် အတည်ပြုပါ</label>
+                    <input type="password" id="witPassword" placeholder="Password ရိုက်ပါ" required class="w-full mt-1 p-3.5 bg-slate-800 border border-slate-700 rounded-2xl text-sm text-white">
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-pink-600 hover:bg-pink-500 font-bold rounded-2xl text-sm transition">ငွေထုတ်တောင်းဆိုရန် တင်မည်</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="historyModal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+        <div class="card-glass border border-yellow-500/40 p-6 rounded-3xl max-w-lg w-full space-y-4 shadow-2xl relative max-h-[80vh] overflow-y-auto">
+            <button onclick="closeHistoryModal()" class="absolute top-3 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            <h3 class="text-sm font-bold text-yellow-400">📋 ငွေသွင်း/ငွေထုတ် မှတ်တမ်းများ</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400">
+                            <th class="pb-2">လုပ်ငန်းစဉ် ID</th>
+                            <th class="pb-2">အမျိုးအစား</th>
+                            <th class="pb-2">ပမာဏ</th>
+                            <th class="pb-2">အခြေအနေ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTransactionsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameModal" class="hidden fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center p-4 backdrop-blur-md overflow-y-auto">
+        <div class="card-glass border border-cyan-500/40 p-5 rounded-3xl max-w-md w-full text-center space-y-3 shadow-2xl relative my-auto">
+            <button onclick="closeWinGoGame()" class="absolute top-3 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            <h2 id="gameRoomTitle" class="text-lg font-bold text-cyan-300">Win Go (30 Sec)</h2>
+            
+            <div class="flex justify-between items-center bg-slate-900 p-3 rounded-2xl border border-slate-800 text-xs">
+                <span class="text-slate-400">ပွဲစဉ်အချိန်</span>
+                <span id="liveTimerDisplay" class="text-base font-bold text-yellow-400 font-mono">00:30</span>
+            </div>
+            
+            <div id="liveResultBox" class="p-2.5 bg-slate-900 rounded-2xl text-xs text-cyan-300 font-bold border border-slate-800">
+                ရလဒ် အချိန်ကုန်မှ ပေါ်မည်...
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1" id="betButtonsContainer">
+                <button onclick="promptBet('အကြီး (Big)')" class="py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-xs shadow-md">အကြီး (Big)</button>
+                <button onclick="promptBet('အသေး (Small)')" class="py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-xs shadow-md">အသေး (Small)</button>
+            </div>
+
+            <div class="space-y-1 pt-1" id="numbersButtonsContainer">
+                <div class="text-[11px] text-slate-400 text-left font-semibold">နံပါတ်အစဉ်လိုက် ရွေးချယ်ရန်</div>
+                <div class="grid grid-cols-5 gap-1.5">
+                    <button onclick="promptBet('နံပါတ် 0')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">0</button>
+                    <button onclick="promptBet('နံပါတ် 1')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">1</button>
+                    <button onclick="promptBet('နံပါတ် 2')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">2</button>
+                    <button onclick="promptBet('နံပါတ် 3')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">3</button>
+                    <button onclick="promptBet('နံပါတ် 4')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">4</button>
+                    <button onclick="promptBet('နံပါတ် 5')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">5</button>
+                    <button onclick="promptBet('နံပါတ် 6')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">6</button>
+                    <button onclick="promptBet('နံပါတ် 7')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">7</button>
+                    <button onclick="promptBet('နံပါတ် 8')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">8</button>
+                    <button onclick="promptBet('နံပါတ် 9')" class="py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-xs">9</button>
+                </div>
+            </div>
+
+            <div class="mt-3 bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
+                <div class="text-xs font-bold text-cyan-400 text-left flex justify-between items-center">
+                    <span>📊 ထွက်ခဲ့ပြီးသော ရလဒ်မှတ်တမ်းများ</span>
+                    <span id="pageIndicator" class="text-[10px] text-slate-400">စာမျက်နှာ 1</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="pb-1.5">ချိန်</th>
+                                <th class="pb-1.5">နံပါတ်</th>
+                                <th class="pb-1.5">အရောင်</th>
+                                <th class="pb-1.5">အကြီး/အသေး</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gameHistoryTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="flex justify-between items-center pt-1">
+                    <button onclick="changeGamePage(-1)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs">◀ ရှေ့သို့</button>
+                    <button onclick="changeGamePage(1)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs">နောက်သို့ ▶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="betConfirmModal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+        <div class="card-glass border border-pink-500/40 p-6 rounded-3xl max-w-xs w-full text-center space-y-4 shadow-2xl">
+            <h3 class="text-sm font-bold text-pink-300">ထိုးကြေးသတ်မှတ်ရန်</h3>
+            <div class="text-xs text-slate-400">ရွေးချယ်မှု: <span id="selectedOptionText" class="text-yellow-400 font-bold"></span></div>
+            <input type="number" id="customBetAmount" placeholder="ထည့်မည့်ပမာဏ (Ks)" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-2xl text-center text-sm text-yellow-300 font-bold">
+            <div class="flex gap-2">
+                <button onclick="confirmAndPlaceBet()" class="flex-1 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-2xl text-xs shadow-md">အတည်ပြုထိုးမည်</button>
+                <button onclick="closeBetModal()" class="flex-1 py-2.5 bg-slate-800 text-white rounded-2xl text-xs">ပိတ်မည်</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminLoginModal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="admin-login-box p-6 rounded-3xl max-w-sm w-full text-center space-y-4 shadow-2xl relative">
+            <button onclick="closeAdminLoginModal()" class="absolute top-3 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            <div class="text-3xl">🛡️</div>
+            <h3 class="text-base font-black text-yellow-400">Admin Panel ဝင်ရောက်ရန်</h3>
+            <p class="text-xs text-slate-300">လုံခြုံရေး Secret Code ရိုက်ထည့်ပါ</p>
+            <input type="password" id="adminSecretInput" placeholder="••••••••" class="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-2xl text-center text-sm text-yellow-300 font-bold focus:border-yellow-400 focus:outline-none">
+            <div class="flex gap-2 pt-2">
+                <button onclick="verifyAdminCode()" class="flex-1 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 text-slate-950 font-black rounded-2xl text-xs shadow-lg">ဝင်မည်</button>
+                <button onclick="closeAdminLoginModal()" class="flex-1 py-3 bg-slate-800 text-white rounded-2xl text-xs">ပိတ်မည်</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminPanelModal" class="hidden fixed inset-0 bg-slate-950/95 z-50 flex flex-col p-4 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+            <h2 class="text-base font-black text-yellow-400">🛡️ Admin Control Panel (Secure System)</h2>
+            <button onclick="closeAdminPanel()" class="bg-red-600 px-3 py-1.5 rounded-xl text-xs font-bold text-white shadow-lg">ပိတ်မည်</button>
+        </div>
+        <div class="space-y-6 max-w-5xl mx-auto w-full">
+            <div class="admin-box p-5 rounded-3xl space-y-3">
+                <h3 class="text-sm font-bold text-green-400 flex items-center gap-2">👥 ကစားသမားများ စာရင်းနှင့် ငွေတိုး/ငွေလျှော့ ထိန်းချုပ်ရန်</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="pb-2">ဖုန်း / Password</th>
+                                <th class="pb-2">အမည် / အခြေအနေ</th>
+                                <th class="pb-2">ဝင်ရက်စွဲ</th>
+                                <th class="pb-2">လက်ကျန်ငွေ</th>
+                                <th class="pb-2">ငွေချိန်ညှိရန် (+/-)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="admin-box p-5 rounded-3xl space-y-3">
+                <h3 class="text-sm font-bold text-cyan-400 flex items-center gap-2">📥 ငွေသွင်း / 📤 ငွေထုတ် တောင်းဆိုချက်များ</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="pb-2">ID / အမျိုးအစား</th>
+                                <th class="pb-2">အသေးစိတ် (နာမည်/ဖုန်း/ငွေ)</th>
+                                <th class="pb-2">အတည်ပြုရန်</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminRequestsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-box p-5 rounded-3xl space-y-3">
+                <h3 class="text-sm font-bold text-yellow-400 flex items-center gap-2">📋 ကစားသမားများ၏ ဆော့ကစားမှုနှင့် ငွေကြေးမှတ်တမ်းများ</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="pb-2">ရက်စွဲ / အချိန်</th>
+                                <th class="pb-2">ကစားသမား</th>
+                                <th class="pb-2">လုပ်ဆောင်ချက်</th>
+                                <th class="pb-2">ပမာဏ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminAllActivityTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://bk777-6bc1b-default-rtdb.firebaseio.com/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let liveTimerInterval = null;
+        let selectedGameOption = "";
+        let currentGameMode = "30s";
+        let currentGamePageNum = 1;
+        let hasBetInCurrentRound = false;
+        let lastRoundId = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('bk777_user');
+            if (savedUser) showDashboard(savedUser);
+        });
+
+        document.getElementById('authForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('authPhone').value.trim();
+            const pass = document.getElementById('authPass').value.trim();
+            if(!phone || !pass) return;
+
+            const currentDate = new Date().toLocaleString();
+            db.ref('users/' + phone).once('value').then(snapshot => {
+                const userData = snapshot.val();
+                if(userData) {
+                    if(userData.password !== pass) {
+                        alert('စကားဝှက် (Password) မှားယွင်းနေပါသည်။');
+                        return;
+                    }
+                    db.ref('users/' + phone).update({ online: true, lastLogin: currentDate });
+                } else {
+                    db.ref('users/' + phone).set({ 
+                        password: pass, 
+                        balance: 0, 
+                        online: true, 
+                        name: 'Member', 
+                        lastLogin: currentDate 
+                    });
+                }
+                localStorage.setItem('bk777_user', phone);
+                showDashboard(phone);
+            });
+        });
+
+        function showDashboard(phone) {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('dashboardScreen').classList.remove('hidden');
+            document.getElementById('userBalanceArea').classList.remove('hidden');
+            document.getElementById('displayUid').innerText = phone;
+            
+            db.ref('users/' + phone).on('value', (snapshot) => {
+                const data = snapshot.val();
+                const bal = data ? (data.balance || 0) : 0;
+                document.getElementById('navBalance').innerText = Number(bal).toLocaleString();
+                document.getElementById('dashBalance').innerText = Number(bal).toLocaleString();
+                if(data) {
+                    document.getElementById('displayUsername').innerText = data.name || 'Member';
+                }
+            });
+
+            loadUserTransactions(phone);
+        }
+
+        function logout() {
+            const phone = localStorage.getItem('bk777_user');
+            if(phone) db.ref('users/' + phone).update({ online: false });
+            localStorage.removeItem('bk777_user');
+            location.reload();
+        }
+
+        function switchTab(tab) {
+            ['sectionGames', 'sectionDeposit', 'sectionWithdraw'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            if(tab === 'games') document.getElementById('sectionGames').classList.remove('hidden');
+            if(tab === 'deposit') document.getElementById('sectionDeposit').classList.remove('hidden');
+            if(tab === 'withdraw') document.getElementById('sectionWithdraw').classList.remove('hidden');
+        }
+
+        function openHistoryModal() { document.getElementById('historyModal').classList.remove('hidden'); }
+        function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
+
+        function openWinGoGame(mode) {
+            currentGameMode = mode;
+            document.getElementById('gameRoomTitle').innerText = mode === '30s' ? 'Win Go (30 Sec)' : 'Win Go (1 Min)';
+            document.getElementById('gameModal').classList.remove('hidden');
+            startLiveTimer();
+        }
+
+        function closeWinGoGame() {
+            if(liveTimerInterval) clearInterval(liveTimerInterval);
+            document.getElementById('gameModal').classList.add('hidden');
+        }
+
+        // စစ်မှန်သော မျိုးဆက်ပွား ကျပန်း နံပါတ်ထုတ်ပေးသည့် စနစ် (True Pseudo-Random based on Round ID)
+        function getPseudoRandomNumber(roundId) {
+            let seed = roundId * 9301 + 49297;
+            seed = Math.abs(Math.sin(seed) * 10000);
+            return Math.floor((seed - Math.floor(seed)) * 10);
+        }
+
+        function startLiveTimer() {
+            if(liveTimerInterval) clearInterval(liveTimerInterval);
+            const duration = currentGameMode === '30s' ? 30 : 60;
+
+            liveTimerInterval = setInterval(() => {
+                const now = Math.floor(Date.now() / 1000);
+                const currentRound = Math.floor(now / duration);
+                
+                if(lastRoundId !== currentRound) {
+                    lastRoundId = currentRound;
+                    hasBetInCurrentRound = false;
+                }
+
+                const timeLeft = duration - (now % duration);
+                const timerEl = document.getElementById('liveTimerDisplay');
+                const resultEl = document.getElementById('liveResultBox');
+                const betButtons = document.getElementById('betButtonsContainer');
+                const numButtons = document.getElementById('numbersButtonsContainer');
+                
+                if(timerEl) {
+                    timerEl.innerText = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+                    
+                    if(hasBetInCurrentRound) {
+                        timerEl.classList.remove('text-red-500', 'animate-pulse');
+                        if(resultEl) resultEl.innerText = `🔒 လောင်းကြေးထိုးပြီးပါပြီ - ရလဒ်အချိန်ကုန်ရန် စောင့်နေပါ (${timeLeft} စက္ကန့်)`;
+                        betButtons.style.opacity = "0.3";
+                        betButtons.style.pointerEvents = "none";
+                        numButtons.style.opacity = "0.3";
+                        numButtons.style.pointerEvents = "none";
+                    } else if(timeLeft <= 5) {
+                        timerEl.classList.add('text-red-500', 'animate-pulse');
+                        if(resultEl) resultEl.innerText = "🔒 လောင်းကြေးပိတ်ထားသည် (Lock ဖြစ်သည်)";
+                        betButtons.style.opacity = "0.3";
+                        betButtons.style.pointerEvents = "none";
+                        numButtons.style.opacity = "0.3";
+                        numButtons.style.pointerEvents = "none";
+                    } else {
+                        timerEl.classList.remove('text-red-500', 'animate-pulse');
+                        betButtons.style.opacity = "1";
+                        betButtons.style.pointerEvents = "auto";
+                        numButtons.style.opacity = "1";
+                        numButtons.style.pointerEvents = "auto";
+                        if(resultEl) resultEl.innerText = "ရလဒ် အချိန်ကုန်မှ ပေါ်မည်...";
+                    }
+
+                    renderGameHistoryTable(currentRound);
+                }
+            }, 1000);
+        }
+
+        function renderGameHistoryTable(currentRound) {
+            const tbody = document.getElementById('gameHistoryTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            const startIndex = (currentGamePageNum - 1) * 10;
+            
+            for(let i = 0; i < 10; i++) {
+                const offsetIndex = startIndex + i;
+                const targetRound = currentRound - 1 - offsetIndex; // ပြီးသွားခဲ့ပြီးသော ပွဲစဉ်များ
+                const num = getPseudoRandomNumber(targetRound);
+                const isBig = num >= 5;
+                const colorName = (num % 2 === 0) ? 'ခရမ်းရောင်/နီ' : 'စိမ်းရောင်';
+                const bigSmallText = isBig ? '<span class="text-purple-400 font-bold">အကြီး (Big)</span>' : '<span class="text-blue-400 font-bold">အသေး (Small)</span>';
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-800/50';
+                row.innerHTML = `
+                    <td class='py-1.5 font-mono text-slate-400'>#${1000 + (targetRound % 1000)}</td>
+                    <td class='py-1.5 font-bold text-yellow-400'>${num}</td>
+                    <td class='py-1.5 text-pink-300'>${colorName}</td>
+                    <td class='py-1.5'>${bigSmallText}</td>
+                `;
+                tbody.appendChild(row);
+            }
+            document.getElementById('pageIndicator').innerText = `စာမျက်နှာ ${currentGamePageNum}`;
+        }
+
+        function changeGamePage(direction) {
+            currentGamePageNum += direction;
+            if(currentGamePageNum < 1) currentGamePageNum = 1;
+            renderGameHistoryTable(lastRoundId || Math.floor(Date.now() / (currentGameMode === '30s' ? 30 : 60)));
+        }
+
+        function promptBet(option) {
+            selectedGameOption = option;
+            document.getElementById('selectedOptionText').innerText = option;
+            document.getElementById('customBetAmount').value = "";
+            document.getElementById('betConfirmModal').classList.remove('hidden');
+        }
+
+        function closeBetModal() {
+            document.getElementById('betConfirmModal').classList.add('hidden');
+        }
+
+        function confirmAndPlaceBet() {
+            const amount = Number(document.getElementById('customBetAmount').value);
+            if(!amount || amount <= 0) return alert('ကျေးဇူးပြု၍ ထိုးမည့်ပမာဏကို မှန်ကန်စွာထည့်ပါ။');
+            
+            const phone = localStorage.getItem('bk777_user');
+            db.ref('users/' + phone + '/balance').once('value').then(snapshot => {
+                let bal = Number(snapshot.val() || 0);
+                if(bal < amount) return alert('လက်ကျန်ငွေ မလုံလောက်ပါ။');
+                bal -= amount;
+                db.ref('users/' + phone).update({ balance: bal });
+                
+                db.ref('bk777_activity').push({
+                    username: phone,
+                    type: 'Win Go Bet',
+                    amount: amount,
+                    detail: selectedGameOption,
+                    timestamp: new Date().toLocaleString()
+                });
+
+                hasBetInCurrentRound = true; 
+                alert(selectedGameOption + ' အတွက် ' + amount.toLocaleString() + ' ကျပ် လောင်းကြေး အောင်မြင်ပါပြီ!');
+                closeBetModal();
+            });
+        }
+
+        document.getElementById('depositForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const phone = localStorage.getItem('bk777_user');
+            const name = document.getElementById('depName').value.trim();
+            const depPhone = document.getElementById('depPhone').value.trim();
+            const amount = Number(document.getElementById('depAmount').value);
+
+            if(amount < 5000 || amount > 10000000) {
+                alert('ငွေသွင်းပမာဏသည် 5,000 နှင့် 10,000,000 ကြား ဖြစ်ရပါမည်။');
+                return;
+            }
+
+            db.ref('counter').transaction(currentVal => (currentVal || 2026000000) + 1, (error, committed, snapshot) => {
+                if(committed) {
+                    const txId = snapshot.val();
+                    db.ref('bk777_data/' + txId).set({
+                        txId: txId,
+                        username: phone,
+                        name: name,
+                        depPhone: depPhone,
+                        amount: amount,
+                        method: 'KBZPay Deposit',
+                        status: 'pending',
+                        type: 'deposit',
+                        timestamp: Date.now()
+                    }).then(() => {
+                        alert('ငွေလွှဲထားကြောင်း Admin ထံသို့ ပို့ပြီးပါပြီ။ ခေတ္တစောင့်ဆိုင်းပေးပါ။');
+                        document.getElementById('depositForm').reset();
+                        loadUserTransactions(phone);
+                    });
+                }
+            });
+        });
+
+        document.getElementById('withdrawForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const phone = localStorage.getItem('bk777_user');
+            const witPhone = document.getElementById('witPhone').value.trim();
+            const amount = Number(document.getElementById('witAmount').value);
+            const password = document.getElementById('witPassword').value.trim();
+
+            db.ref('users/' + phone).once('value').then(snapshot => {
+                const userData = snapshot.val();
+                if(userData.password !== password) {
+                    alert('Password မှားယွင်းနေပါသည်။');
+                    return;
+                }
+                let currentBal = Number(userData.balance || 0);
+                if(currentBal < amount) {
+                    alert('လက်ကျန်ငွေ မလုံလောက်ပါ။');
+                    return;
+                }
+
+                const newBal = currentBal - amount;
+
+                db.ref('counter').transaction(currentVal => (currentVal || 2026000000) + 1, (error, committed, snapshot) => {
+                    if(committed) {
+                        const txId = snapshot.val();
+                        db.ref('users/' + phone).update({ balance: newBal });
+                        db.ref('bk777_data/' + txId).set({
+                            txId: txId,
+                            username: phone,
+                            witPhone: witPhone,
+                            amount: amount,
+                            method: 'KBZPay Withdraw',
+                            status: 'pending',
+                            type: 'withdraw',
+                            timestamp: Date.now()
+                        }).then(() => {
+                            alert('ငွေထုတ်တောင်းဆိုမှု တင်ပြီးပါပြီ (လက်ကျန်ငွေထဲမှ ဖြတ်တောက်ပြီးပါပြီ)');
+                            document.getElementById('withdrawForm').reset();
+                            loadUserTransactions(phone);
+                        });
+                    }
+                });
+            });
+        });
+
+        function loadUserTransactions(phone) {
+            db.ref('bk777_data').orderByChild('username').equalTo(phone).on('value', (snapshot) => {
+                const data = snapshot.val();
+                const tbody = document.getElementById('userTransactionsTable');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                if(!data) return;
+                Object.keys(data).forEach(key => {
+                    const item = data[key];
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-800/50';
+                    let statusBadge = item.status === 'approved' ? '<span class="text-green-400 font-bold">အောင်မြင်ပြီး</span>' : '<span class="text-yellow-400">စောင့်ဆိုင်းဆဲ</span>';
+                    row.innerHTML = `<td class='py-2 font-mono'>${item.txId}</td><td class='py-2'>${item.type === 'deposit' ? 'ငွေသွင်း' : 'ငွေထုတ်'}</td><td class='py-2 text-yellow-400 font-bold'>${item.amount.toLocaleString()} Ks</td><td class='py-2'>${statusBadge}</td>`;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        function openAdminLoginModal() {
+            document.getElementById('adminSecretInput').value = "";
+            document.getElementById('adminLoginModal').classList.remove('hidden');
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+        }
+
+        function verifyAdminCode() {
+            const code = document.getElementById('adminSecretInput').value.trim();
+            if(code === "20091718") {
+                closeAdminLoginModal();
+                document.getElementById('adminPanelModal').classList.remove('hidden');
+                loadAdminPanelData();
+            } else {
+                alert("ကုဒ်မှားယွင်းနေပါသည်။");
+            }
+        }
+
+        function closeAdminPanel() { document.getElementById('adminPanelModal').classList.add('hidden'); }
+
+        function loadAdminPanelData() {
+            db.ref('users').on('value', (snapshot) => {
+                const users = snapshot.val();
+                const tbody = document.getElementById('adminUsersTable');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                if(!users) return;
+                Object.keys(users).forEach(phone => {
+                    const u = users[phone];
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-800/50';
+                    let statusColor = u.online ? '<span class="text-green-400">● Online</span>' : '<span class="text-slate-500">○ Offline</span>';
+                    row.innerHTML = `
+                        <td class='py-2 font-mono'>${phone}<br><span class='text-slate-400'>Pass: ${u.password}</span></td>
+                        <td class='py-2'>${u.name || 'Member'}<br>${statusColor}</td>
+                        <td class='py-2 text-[11px] text-slate-300'>${u.lastLogin || '-'}</td>
+                        <td class='py-2 text-green-400 font-bold'>${Number(u.balance || 0).toLocaleString()} Ks</td>
+                        <td class='py-2'>
+                            <select id='action_${phone}' class='bg-slate-800 p-1 rounded text-xs text-white'>
+                                <option value='add'>(+) ပေါင်း</option>
+                                <option value='sub'>(-) နှုတ်</option>
+                            </select>
+                            <input type='number' id='amt_${phone}' placeholder='ငွေ' class='w-16 bg-slate-800 p-1 rounded text-xs ml-1 text-white'>
+                            <button onclick="updateBalance('${phone}')" class='bg-yellow-500 text-slate-950 px-2 py-1 rounded text-xs font-bold ml-1'>လုပ်မည်</button>
+                        </td>`;
+                    tbody.appendChild(row);
+                });
+            });
+
+            db.ref('bk777_data').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const tbody = document.getElementById('adminRequestsTable');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                if(!data) return;
+                Object.keys(data).forEach(key => {
+                    const item = data[key];
+                    if(item.status === 'pending') {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-slate-800/50';
+                        let detailText = item.type === 'deposit' ? `နာမည်: ${item.name}<br>ဖုန်း: ${item.depPhone}` : `ဖုန်း: ${item.witPhone} (ထုတ်ပြီး)`;
+                        row.innerHTML = `
+                            <td class='py-2 font-mono'>${item.txId}<br><span class='text-cyan-400'>${item.type.toUpperCase()}</span></td>
+                            <td class='py-2'>${detailText}<br><span class='text-yellow-400 font-bold'>${item.amount.toLocaleString()} Ks</span></td>
+                            <td class='py-2'><button onclick="approveRequest('${key}', '${item.username}', ${item.amount}, '${item.type}')" class='bg-green-600 px-2.5 py-1.5 rounded-xl text-xs font-bold text-white shadow-md'>အတည်ပြုပြီ</button></td>`;
+                        tbody.appendChild(row);
+                    }
+                });
+            });
+
+            db.ref('bk777_activity').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const tbody = document.getElementById('adminAllActivityTable');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                if(!data) return;
+                Object.keys(data).forEach(key => {
+                    const act = data[key];
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-800/50';
+                    row.innerHTML = `
+                        <td class='py-2 text-[11px] text-slate-400'>${act.timestamp}</td>
+                        <td class='py-2 font-mono text-cyan-300'>${act.username}</td>
+                        <td class='py-2'>${act.type} (${act.detail})</td>
+                        <td class='py-2 text-yellow-400 font-bold'>${act.amount.toLocaleString()} Ks</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        function updateBalance(phone) {
+            const action = document.getElementById('action_' + phone).value;
+            const amt = Number(document.getElementById('amt_' + phone).value);
+            if(!amt) return;
+            db.ref('users/' + phone + '/balance').once('value').then(snapshot => {
+                let bal = Number(snapshot.val() || 0);
+                bal = action === 'add' ? bal + amt : Math.max(0, bal - amt);
+                db.ref('users/' + phone).update({ balance: bal }).then(() => alert('ငွေပမာဏ ချိန်ညှိပြီးပါပြီ။'));
+            });
+        }
+
+        function approveRequest(key, phone, amount, type) {
+            db.ref('users/' + phone + '/balance').once('value').then(snapshot => {
+                let bal = Number(snapshot.val() || 0);
+                if(type === 'deposit') {
+                    bal += Number(amount);
+                    db.ref('users/' + phone).update({ balance: bal });
+                }
+                db.ref('bk777_data/' + key).update({ status: 'approved' }).then(() => alert('အတည်ပြုပြီးပါပြီ။'));
+            });
+        }
+    </script>
+</body>
+</html>
